@@ -1,0 +1,1 @@
+export const fullNameRegex = /^[A-Za-z\s'.-]+$/;
