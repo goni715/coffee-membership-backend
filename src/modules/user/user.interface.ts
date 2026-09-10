@@ -7,12 +7,15 @@ export type TAccountStatus = (typeof ACCOUNT_STATUSES)[keyof typeof ACCOUNT_STAT
 export interface IUser extends Document {
   fullName: string;
   email: string;
+  phone: string;
   password: string;
   role: TUserRole;
   profileImg?: string;
   isEmailVerified: boolean;
   emailVerifiedAt?: Date;
   status: TAccountStatus;
+  googleId: string;
+  appleId: string;
   blockedAt?: Date;
   passwordChangedAt?: Date;
   lastLoginAt?: Date;

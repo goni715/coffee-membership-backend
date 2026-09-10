@@ -1,4 +1,4 @@
 export const OTP_TYPES = {
-  register: "register",
-  reset_password: "reset_password",
+  REGISTER: "register",
+  RESET_PASSWORD: "reset_password",
 } as const;

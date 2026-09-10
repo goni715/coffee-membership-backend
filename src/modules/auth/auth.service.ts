@@ -25,18 +25,20 @@ import OtpModel from "@/modules/otp/otp.model";
 import mongoose from "mongoose";
 import { Types } from "mongoose";
 import { OTP_TYPES } from "@/modules/otp/otp.constant";
-import { ACCOUNT_STATUSES } from "@/modules/user/user.constant";
+import { ACCOUNT_STATUSES, USER_ROLES } from "@/modules/user/user.constant";
 import {
   createToken,
   TJwtExpiresIn,
   verifyToken,
 } from "@/helpers/JwtHelper";
 import { checkPassword, hashedPassword } from "@/helpers/PasswordHelper";
-import { TAccountStatus } from "@/modules/user/user.interface";
+import { IUser, TAccountStatus } from "@/modules/user/user.interface";
+import encrypt from "@/utils/encrypt";
+import { generateResetToken } from "@/utils/generateResetToken";
 
-/*============ register user  ============*/
-const registerUser = async (payload: any) => {
-  const { email, longitude, latitude } = payload;
+/*============ register customer  ============*/
+const registerCustomer = async (payload: IUser) => {
+  const { email } = payload;
 
   //check email
   const user = await UserModel.findOne({ email });
@@ -58,7 +60,7 @@ const registerUser = async (payload: any) => {
     //update otp
     await OtpModel.updateOne(
       { email, userId: user._id },
-      { otp, otpExpires: new Date(+new Date() + 600000) },
+      { otp, expires: new Date(+new Date() + 600000) },
       { upsert: true, runValidators: true },
     );
 
@@ -73,12 +75,6 @@ const registerUser = async (payload: any) => {
   //generate otp
   const otp = generateOTP();
 
-  //location coordinates
-  payload.location = {
-    type: "Point",
-    coordinates: [longitude, latitude],
-  };
-
   //transaction & rollback
   const session = await mongoose.startSession();
 
@@ -86,7 +82,7 @@ const registerUser = async (payload: any) => {
     session.startTransaction();
 
     //create new user
-    const newUser = await UserModel.create([{ ...payload }], { session });
+    const newUser = await UserModel.create([{ ...payload, role: USER_ROLES.CUSTOMER }], { session });
 
     //create otp
     await OtpModel.create(
@@ -102,7 +98,6 @@ const registerUser = async (payload: any) => {
 
     //transaction success
     await session.commitTransaction();
-    await session.endSession();
 
     //send verification email
     await sendVerificationEmail(email, otp.toString());
@@ -110,10 +105,11 @@ const registerUser = async (payload: any) => {
     return {
       message: "Please check your email to verify",
     };
-  } catch (err: any) {
+  } catch (err) {
     await session.abortTransaction();
-    await session.endSession();
     throw err;
+  } finally {
+    await session.endSession();
   }
 };
 
@@ -124,12 +120,12 @@ const verifyAccount = async (payload: IVerifyOTp) => {
   const user = await UserModel.findOne({ email: payload.email });
 
   if (!user) {
-    throw new NotFoundError("Couldn't find this email address");
+    throw new NotFoundError("No account found for this email address.");
   }
 
   //user is alreay verified
   if (user.isEmailVerified) {
-    throw new ConflictError("This Email is already verified");
+    throw new ConflictError("An account with this email address is already verified.");
   }
 
   //check otp
@@ -137,16 +133,16 @@ const verifyAccount = async (payload: IVerifyOTp) => {
     userId: user._id,
     email,
     otp,
-    type: OTP_TYPES.register,
+    type: OTP_TYPES.REGISTER,
   });
 
   if (!otpRecord) {
-    throw new UnprocessableError("Invalid Verification Code");
+    throw new UnprocessableError("Invalid verification code.");
   }
 
   //check otp expired
-  if (otpRecord.otpExpires < new Date()) {
-    throw new GoneError("Expired verification code");
+  if (otpRecord.expires < new Date()) {
+    throw new GoneError("Expired verification code.");
   }
 
   //transaction & rollback
@@ -158,7 +154,7 @@ const verifyAccount = async (payload: IVerifyOTp) => {
     //update the user
     await UserModel.updateOne(
       { _id: user._id, email: user.email },
-      { isVerified: true, status: "active" },
+      { isEmailVerified: true, emailVerifiedAt: new Date(), status: ACCOUNT_STATUSES.ACTIVE },
       { session },
     );
 
@@ -196,7 +192,7 @@ const resendVerificationEmail = async (email: string) => {
   const otpRecord = await OtpModel.findOne({
     userId: user._id,
     email,
-    type: OTP_TYPES.register,
+    type: OTP_TYPES.REGISTER,
   });
 
   // enforce a 2-minute cooldown between OTP resends
@@ -213,10 +209,10 @@ const resendVerificationEmail = async (email: string) => {
 
   //update otp
   await OtpModel.updateOne(
-    { userId: user._id, email, type: OTP_TYPES.register },
+    { userId: user._id, email, type: OTP_TYPES.REGISTER },
     {
       otp,
-      otpExpires: new Date(+new Date() + 600000),
+      expires: new Date(+new Date() + 600000),
     },
     { upsert: true, runValidators: true },
   );
@@ -252,7 +248,7 @@ const loginUser = async (payload: ILogin, ip: string) => {
   if (user.status === ACCOUNT_STATUSES.BLOCKED) {
     throw new ForbiddenError("Your account is blocked.");
   }
-  
+
   //check you are not customer or owner
   if (!["customer", "owner"].includes(user.role)) {
     throw new ForbiddenError(`Sorry! You have no access to login.`);
@@ -646,18 +642,18 @@ const forgotPasswordSendOtp = async (email: string) => {
     throw new ForbiddenError("Your account is blocked.");
   }
 
-  //check otp--  // enforce a 2-minute cooldown between OTP resends
+  //check otp--// enforce a 1-minute cooldown between OTP resends
   const otpRecord = await OtpModel.findOne({
     userId: user._id,
     email,
-    type: OTP_TYPES.reset_password,
+    type: OTP_TYPES.RESET_PASSWORD,
   });
 
   if (otpRecord) {
     const now = Date.now();
     const updated = new Date(otpRecord.updatedAt).getTime();
-    const twoMinutes = 1 * 60 * 1000;
-    if (now - updated < twoMinutes) {
+    const oneMinutes = 1 * 60 * 1000;
+    if (now - updated < oneMinutes) {
       throw new ConflictError("OTP can only be resent after 1 minute.");
     }
   }
@@ -669,8 +665,8 @@ const forgotPasswordSendOtp = async (email: string) => {
     { userId: user._id, email },
     {
       otp,
-      otpExpires: new Date(+new Date() + 600000),
-      type: OTP_TYPES.reset_password,
+      expires: new Date(+new Date() + 600000),
+      type: OTP_TYPES.RESET_PASSWORD,
       isVerified: false,
     },
     { upsert: true },
@@ -708,31 +704,34 @@ const forgotPasswordVerifyOtp = async (payload: IVerifyOTp) => {
     userId: user._id,
     email,
     otp,
-    type: OTP_TYPES.reset_password,
+    type: OTP_TYPES.RESET_PASSWORD,
     isVerified: false,
   });
   if (!otpRecord) {
-    throw new UnprocessableError("Invalid verification code");
+    throw new UnprocessableError("Invalid verification code.");
   }
   //check otp expired
-  if (otpRecord.otpExpires && otpRecord.otpExpires < new Date()) {
+  if (otpRecord.expires && otpRecord.expires < new Date()) {
     throw new GoneError("Expired verification code");
   }
 
-  //update the otp status
-  await OtpModel.updateOne(
+  //delete the otp
+  await OtpModel.deleteOne(
     {
       userId: user._id,
       email,
       otp,
-      type: OTP_TYPES.reset_password,
+      type: OTP_TYPES.RESET_PASSWORD,
       isVerified: false,
-    },
-    { isVerified: true },
-    { runValidators: true },
+    }
   );
 
-  return null;
+  //create token
+  const otpToken = generateResetToken(user.email, 5);
+
+  return {
+    token: otpToken
+  };
 };
 
 /*============ forgot password set new password (step-03)  ============*/
@@ -758,14 +757,14 @@ const forgotPasswordSetNewPassword = async (payload: INewPassword) => {
     userId: user._id,
     email,
     otp,
-    type: OTP_TYPES.reset_password,
+    type: OTP_TYPES.RESET_PASSWORD,
     isVerified: true,
   });
   if (!otpRecord) {
     throw new UnprocessableError("Invalid verification code");
   }
   //check otp expired
-  if (otpRecord.otpExpires && otpRecord.otpExpires < new Date()) {
+  if (otpRecord.expires && otpRecord.expires < new Date()) {
     throw new GoneError("Expired verification code");
   }
 
@@ -789,7 +788,7 @@ const forgotPasswordSetNewPassword = async (payload: INewPassword) => {
         userId: user._id,
         email,
         otp,
-        type: OTP_TYPES.reset_password,
+        type: OTP_TYPES.RESET_PASSWORD,
         isVerified: true,
       },
       { session },
@@ -916,7 +915,7 @@ const deleteAccount = async (loginUserId: string, password: string) => {
 };
 
 const AuthService = {
-  registerUser,
+  registerCustomer,
   verifyAccount,
   resendVerificationEmail,
   loginUser,

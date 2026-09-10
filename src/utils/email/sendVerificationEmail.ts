@@ -17,7 +17,7 @@ const sendVerificationEmail = async (email: string, otp: string) => {
   });
 
   const mailOptions = {
-    from: config.smtp.smtp_from,
+    from: `Heritage & Hearth ${config.smtp.smtp_from}`,
     to: email,
     subject: "Your Heritage & Hearth Verification Code",
     // Plain-text fallback — critical for spam score

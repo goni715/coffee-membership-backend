@@ -4,7 +4,6 @@ export const ACCOUNT_STATUSES = {
   PENDING : 'pending',
   ACTIVE : 'active',
   BLOCKED : 'blocked',
-  SUSPENDED : 'suspended',
 } as const;
 
 export const USER_ROLES = {

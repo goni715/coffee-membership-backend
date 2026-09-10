@@ -17,7 +17,7 @@ const sendForgotEmail = async (EmailTo: string, otp: string) => {
   });
 
   const mailOptions = {
-    from: config.smtp.smtp_from,
+    from: `Heritage & Hearth ${config.smtp.smtp_from}`,
     to: EmailTo,
     subject: "Your Heritage & Hearth Password Reset Code",
     // Plain-text fallback — critical for spam score

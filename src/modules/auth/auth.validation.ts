@@ -2,6 +2,21 @@ import z from "zod";
 import { fullNameRegex } from "@/modules/user/user.validation";
 import { Types } from "mongoose";
 
+export const phoneRegex = /^\+?\d{1,14}$/;
+
+const fullNameZodSchema = z
+  .string({
+    error: (issue) =>
+      issue.input === undefined
+        ? "fullName is required"
+        : "fullName must be string",
+  })
+  .trim()
+  .regex(fullNameRegex, {
+    message:
+      "Full Name can only contain letters, spaces, apostrophes, hyphens, and dots.",
+  });
+
 export const emailZodSchema = z.email({
   error: (issue) =>
     issue.input === undefined ? "email is required" : "Invalid email address",
@@ -30,30 +45,24 @@ export const emailValidationSchema = z.object({
   email: emailZodSchema,
 });
 
-export const registerUserValidationSchema = z.object({
-  fullName: z
-    .string({
-      error: (issue) =>
-        issue.input === undefined
-          ? "fullName is required"
-          : "fullName must be string",
-    })
-    .trim()
-    .regex(fullNameRegex, {
-      message:
-        "Full Name can only contain letters, spaces, apostrophes, hyphens, and dots.",
-    }),
+
+const phoneNumberZodSchema = z
+  .string({
+    error: (issue) =>
+      issue.input === undefined
+        ? "Phone number is required"
+        : "Phone number must be a string",
+  })
+  .trim()
+  .regex(phoneRegex, {
+    message: "Please enter a valid phone number (e.g., +1234567890 or 1234567890)",
+  });
+
+export const registerCustomerValidationSchema = z.object({
+  fullName: fullNameZodSchema,
   email: emailZodSchema,
+  phone: phoneNumberZodSchema,
   password: passwordZodSchema,
-  address: z
-    .string({
-      error: (issue) =>
-        issue.input === undefined
-          ? "address is required"
-          : "address must be string",
-    })
-    .min(1, "address is required")
-    .trim(),
 });
 
 export const verifyOtpValidationSchema = z.object({

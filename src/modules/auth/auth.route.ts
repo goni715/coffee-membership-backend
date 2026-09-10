@@ -10,7 +10,7 @@ import {
   forgotPasswordSetNewPassSchema,
   loginValidationSchema,
   refreshTokenValidationSchema,
-  registerUserValidationSchema,
+  registerCustomerValidationSchema,
   verifyOtpValidationSchema,
 } from "./auth.validation";
 import AuthMiddleware from "@/middlewares/authMiddleware";
@@ -19,9 +19,9 @@ import { USER_ROLES } from "@/modules/user/user.constant";
 const router = express.Router();
 
 router.post(
-  "/register-user",
-  validationMiddleware(registerUserValidationSchema),
-  AuthController.registerUser,
+  "/register-customer",
+  validationMiddleware(registerCustomerValidationSchema),
+  AuthController.registerCustomer,
 );
 
 router.post(
@@ -86,19 +86,19 @@ router.patch(
 
 //forgot-password with otp
 router.post(
-  "/forgot-password-send-otp",
+  "/forgot-password/send-otp",
   validationMiddleware(emailValidationSchema),
   AuthController.forgotPasswordSendOtp,
 );
 
 router.post(
-  "/forgot-password-verify-otp",
+  "/forgot-password/verify-otp",
   validationMiddleware(verifyOtpValidationSchema),
   AuthController.forgotPasswordVerifyOtp,
 );
 
 router.post(
-  "/forgot-password-set-new-password",
+  "/forgot-password/set-new-password",
   validationMiddleware(forgotPasswordSetNewPassSchema),
   AuthController.forgotPasswordSetNewPassword,
 );

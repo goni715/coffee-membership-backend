@@ -1,6 +1,7 @@
 import { model, Schema } from "mongoose";
 import { ACCOUNT_STATUSES, USER_ROLES } from "./user.constant";
 import { IUser } from "./user.interface";
+import { hashedPassword } from "@/helpers/PasswordHelper";
 
 const userSchema = new Schema<IUser>(
   {
@@ -14,6 +15,11 @@ const userSchema = new Schema<IUser>(
       required: [true, "Email is required"],
       unique: true,
       lowercase: true,
+      trim: true,
+    },
+    phone: {
+      type: String,
+      required: [true, "Phone number is required"],
       trim: true,
     },
     password: {
@@ -42,6 +48,14 @@ const userSchema = new Schema<IUser>(
       enum: Object.values(ACCOUNT_STATUSES),
       default: ACCOUNT_STATUSES.PENDING,
     },
+    googleId: {
+      type: String,
+      default: null,
+    },
+    appleId: {
+      type: String,
+      default: null,
+    },
     blockedAt: {
       type: Date,
       default: null,
@@ -64,6 +78,14 @@ const userSchema = new Schema<IUser>(
     versionKey: false,
   },
 );
+
+
+// Hash password before saving
+userSchema.pre("save", async function (this: any) {
+  // `this` refers to the document being saved
+  if (!this.isModified("password")) return;
+  this.password = await hashedPassword(this.password);
+});
 
 const UserModel = model<IUser>("User", userSchema);
 export default UserModel;

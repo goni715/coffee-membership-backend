@@ -17,7 +17,7 @@ const sendReplyEmail = async (email: string, replyMessage: string) => {
   });
 
   const mailOptions = {
-    from: config.smtp.smtp_from,
+    from: `Heritage & Hearth ${config.smtp.smtp_from}`,
     to: email,
     subject: "Response to Your Inquiry - Heritage & Hearth",
     text: `Thank you for reaching out to us. We have received your message and our support team has responded:\n\n${replyMessage}\n\nIf you have any further questions, simply reply to this email or contact our support team at support@heritageandhearth.com.\n\n© ${new Date().getFullYear()} Heritage & Hearth. All rights reserved.`,

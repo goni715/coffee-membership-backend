@@ -9,6 +9,7 @@ const envSchema = z.object({
   PORT: z.string(),
   DATABASE_URL: z.string(),
   BCRPYT_SALT_ROUNDS: z.string(),
+  ENCRYPTION_KEY: z.string(),
   CORS_ORIGINS: z.string(),
   MAX_SESSIONS: z.string(),
 
@@ -21,10 +22,12 @@ const envSchema = z.object({
   JWT_VERIFY_EMAIL_SECRET: z.string(),
   JWT_ACCESS_SECRET: z.string(),
   JWT_REFRESH_SECRET: z.string(),
+  JWT_OTP_TOKEN_SECRET: z.string(),
   JWT_VERIFY_EMAIL_EXPIRES_IN: z.string(),
   JWT_ACCESS_EXPIRES_IN: z.string(),
   JWT_REFRESH_EXPIRES_IN: z.string(),
   JWT_REFRESH_EXPIRES_IN_REMEMBER: z.string(),
+  JWT_OTP_TOKEN_EXPIRES_IN: z.string(),
 
   // Refresh Token
   REFRESH_TOKEN_COOKIE_MAX_AGE: z.string(),
@@ -70,6 +73,7 @@ export default {
   port: env.PORT,
   database_url: env.DATABASE_URL,
   bcrypt_salt_rounds: env.BCRPYT_SALT_ROUNDS,
+  encryption_key: env.ENCRYPTION_KEY,
   cors_origins: env.CORS_ORIGINS,
   max_sessions: env.MAX_SESSIONS,
   smtp: {
@@ -81,11 +85,13 @@ export default {
     jwt_verify_email_secret: env.JWT_VERIFY_EMAIL_SECRET,
     jwt_access_secret: env.JWT_ACCESS_SECRET,
     jwt_refresh_secret: env.JWT_REFRESH_SECRET,
+    jwt_otp_token_secret: env.JWT_OTP_TOKEN_SECRET,
     jwt_verify_email_expires_in: env.JWT_VERIFY_EMAIL_EXPIRES_IN,
     jwt_access_expires_in: env.JWT_ACCESS_EXPIRES_IN,
     jwt_refresh_expires_in: env.JWT_REFRESH_EXPIRES_IN,
     jwt_refresh_expires_in_remember:
       env.JWT_REFRESH_EXPIRES_IN_REMEMBER,
+    jwt_otp_token_expires_in: env.JWT_OTP_TOKEN_EXPIRES_IN,
   },
   refreshToken: {
     refresh_token_cookie_max_age: env.REFRESH_TOKEN_COOKIE_MAX_AGE,
