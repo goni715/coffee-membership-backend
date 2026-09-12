@@ -22,12 +22,10 @@ const envSchema = z.object({
   JWT_VERIFY_EMAIL_SECRET: z.string(),
   JWT_ACCESS_SECRET: z.string(),
   JWT_REFRESH_SECRET: z.string(),
-  JWT_OTP_TOKEN_SECRET: z.string(),
   JWT_VERIFY_EMAIL_EXPIRES_IN: z.string(),
   JWT_ACCESS_EXPIRES_IN: z.string(),
   JWT_REFRESH_EXPIRES_IN: z.string(),
   JWT_REFRESH_EXPIRES_IN_REMEMBER: z.string(),
-  JWT_OTP_TOKEN_EXPIRES_IN: z.string(),
 
   // Refresh Token
   REFRESH_TOKEN_COOKIE_MAX_AGE: z.string(),
@@ -35,6 +33,7 @@ const envSchema = z.object({
 
   // Admin
   SUPER_ADMIN_EMAIL: z.string(),
+  SUPER_ADMIN_PHONE_NUMBER: z.string(),
   SUPER_ADMIN_PASSWORD: z.string(),
   ADMIN_DEFAULT_PASSWORD: z.string(),
 
@@ -85,13 +84,11 @@ export default {
     jwt_verify_email_secret: env.JWT_VERIFY_EMAIL_SECRET,
     jwt_access_secret: env.JWT_ACCESS_SECRET,
     jwt_refresh_secret: env.JWT_REFRESH_SECRET,
-    jwt_otp_token_secret: env.JWT_OTP_TOKEN_SECRET,
     jwt_verify_email_expires_in: env.JWT_VERIFY_EMAIL_EXPIRES_IN,
     jwt_access_expires_in: env.JWT_ACCESS_EXPIRES_IN,
     jwt_refresh_expires_in: env.JWT_REFRESH_EXPIRES_IN,
     jwt_refresh_expires_in_remember:
       env.JWT_REFRESH_EXPIRES_IN_REMEMBER,
-    jwt_otp_token_expires_in: env.JWT_OTP_TOKEN_EXPIRES_IN,
   },
   refreshToken: {
     refresh_token_cookie_max_age: env.REFRESH_TOKEN_COOKIE_MAX_AGE,
@@ -100,6 +97,7 @@ export default {
   },
   admin: {
     super_admin_email: env.SUPER_ADMIN_EMAIL,
+    super_admin_phone_number: env.SUPER_ADMIN_PHONE_NUMBER,
     super_admin_password: env.SUPER_ADMIN_PASSWORD,
     admin_default_password: env.ADMIN_DEFAULT_PASSWORD,
   },

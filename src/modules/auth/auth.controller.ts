@@ -100,24 +100,12 @@ const loginAdmin = asyncHandler(async (req, res) => {
 });
 
 //logout
-const logout = asyncHandler(async (req: Request, res: Response) => {
+const logout = asyncHandler(async (req, res) => {
   const { refreshToken } = req.cookies;
   const { refreshToken: refreshTokenByBody } = req.body;
   const finalRefreshToken = refreshToken || refreshTokenByBody;
 
-  //check session is revoked with this refreshToken
-  const refreshTokenHash = makeHash(finalRefreshToken);
-  const session = await SessionModel.findOne({
-    refreshTokenHash,
-    revoked: false,
-  });
-
-  if (!session) {
-    throw new UnauthorizedError("Invalid refresh token");
-  }
-
-  //update session
-  await SessionModel.updateOne({ refreshTokenHash }, { revoked: true });
+  const result = await AuthService.logout(finalRefreshToken);
 
   res.clearCookie("refreshToken", {
     httpOnly: true,
@@ -129,7 +117,7 @@ const logout = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     message: "User logged out successfully",
-    data: null,
+    data: result,
   });
 });
 
@@ -139,59 +127,20 @@ const logoutAll = asyncHandler(async (req: Request, res: Response) => {
   const { refreshToken: refreshTokenByBody } = req.body;
   const finalRefreshToken = refreshToken || refreshTokenByBody;
 
-  //token-verify
-  let decoded;
+  const result = await AuthService.logoutFromAll(finalRefreshToken);
 
-  try {
-    decoded = verifyToken(
-      finalRefreshToken,
-      config.jwt.jwt_refresh_secret as Secret,
-    );
-  } catch (error) {
-    throw new UnauthorizedError("Invalid refresh token");
-  }
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: config.node_env === "production",
+    sameSite: config.node_env === "production" ? "none" : "lax", // strict: Prevents CSRF attacks
+    path: "/",
+  });
 
-  //transaction & rollback
-  const session = await mongoose.startSession();
-  try {
-    session.startTransaction();
-
-    //delete all session
-    await SessionModel.deleteMany(
-      {
-        userId: decoded.userId,
-      },
-      { session },
-    );
-
-    //update tokenVersion
-    await UserModel.updateOne(
-      { _id: decoded.userId },
-      { $inc: { tokenVersion: 1 } },
-      { session },
-    );
-
-    //transaction success
-    await session.commitTransaction();
-    await session.endSession();
-
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: config.node_env === "production",
-      sameSite: config.node_env === "production" ? "none" : "lax", // strict: Prevents CSRF attacks
-      path: "/",
-    });
-
-    return res.status(200).json({
-      success: true,
-      message: "Logged out from all devices successfully",
-      data: null,
-    });
-  } catch (err: any) {
-    await session.abortTransaction();
-    await session.endSession();
-    throw err;
-  }
+  return res.status(200).json({
+    success: true,
+    message: "Logged out from all devices successfully",
+    data: result,
+  });
 });
 
 //get all sessions

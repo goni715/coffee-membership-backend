@@ -1,7 +1,7 @@
 export interface ILogin {
     email: string;
     password: string;
-    rememberMe: boolean;
+    isRememberMe: boolean;
 }
 
 export interface IVerifyOTp {
@@ -16,7 +16,6 @@ export interface IChangePassword {
 }
 
 export interface INewPassword {
-    email: string;
-    otp: string;
+    token: string;
     password: string
 }

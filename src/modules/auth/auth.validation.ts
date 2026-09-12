@@ -31,6 +31,10 @@ const passwordZodSchema = z
   })
   .min(6, "Password must be at least 6 characters long")
   .max(60, "Password must not exceed 60 characters")
+  .regex(
+    /^(?=.*[a-zA-Z])(?=.*\d)/,
+    "Password must contain at least one letter and one number",
+  )
   .trim();
 
 const otpZodSchema = z
@@ -73,12 +77,12 @@ export const verifyOtpValidationSchema = z.object({
 export const loginValidationSchema = z.object({
   email: emailZodSchema,
   password: passwordZodSchema,
-  rememberMe: z
+  isRememberMe: z
     .boolean({
       error: (issue) =>
         issue.input === undefined
           ? ""
-          : "rememberMe must be boolean value",
+          : "isRememberMe must be boolean value",
     })
     .optional()
     .default(false),
@@ -114,6 +118,10 @@ export const changePasswordValidationSchema = z
       })
       .min(6, "New password must be at least 6 characters long")
       .max(60, "New password must not exceed 60 characters")
+      .regex(
+        /^(?=.*[a-zA-Z])(?=.*\d)/,
+        "New password must contain at least one letter and one number",
+      )
       .trim(),
   })
   .superRefine((data, ctx) => {
@@ -126,11 +134,19 @@ export const changePasswordValidationSchema = z
     }
   });
 
-export const forgotPasswordSetNewPassSchema = z.object({
-  email: emailZodSchema,
-  otp: otpZodSchema,
+export const setNewPasswordValidationSchema = z.object({
+  token: z
+    .string({
+      error: (issue) =>
+        issue.input === undefined
+          ? "token is required"
+          : "token must be string",
+    })
+    .trim()
+    .regex(/^[A-Za-z0-9_-]+$/, "Invalid token format."),
   password: passwordZodSchema,
 });
+
 
 export const changeStatusValidationSchema = z.object({
   status: z

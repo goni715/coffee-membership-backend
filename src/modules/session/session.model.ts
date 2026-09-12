@@ -19,6 +19,11 @@ const sessionSchema = new Schema<ISession>({
     revoked: {
         type: Boolean,
         default: false
+    },
+    expiresAt: {
+        type: Date,
+        required: true,
+        index: { expires: 0 } //(Time-To-Live)-automatic delete
     }
 }, {
     timestamps: true,

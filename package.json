@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc && tsc-alias",
     "dev": "tsx watch ./src/server.ts",
+    "seed": "tsx ./src/seed/seed.ts",
     "start": "nodemon ./dist/server.js",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix"

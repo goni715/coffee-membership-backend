@@ -33,8 +33,8 @@ import {
 } from "@/helpers/JwtHelper";
 import { checkPassword, hashedPassword } from "@/helpers/PasswordHelper";
 import { IUser, TAccountStatus } from "@/modules/user/user.interface";
-import encrypt from "@/utils/encrypt";
 import { generateResetToken } from "@/utils/generateResetToken";
+import decrypt from "@/utils/decrypt";
 
 /*============ register customer  ============*/
 const registerCustomer = async (payload: IUser) => {
@@ -60,7 +60,7 @@ const registerCustomer = async (payload: IUser) => {
     //update otp
     await OtpModel.updateOne(
       { email, userId: user._id },
-      { otp, expires: new Date(+new Date() + 600000) },
+      { otp, expiresAt: new Date(+new Date() + 600000) },
       { upsert: true, runValidators: true },
     );
 
@@ -141,7 +141,7 @@ const verifyAccount = async (payload: IVerifyOTp) => {
   }
 
   //check otp expired
-  if (otpRecord.expires < new Date()) {
+  if (otpRecord.expiresAt < new Date()) {
     throw new GoneError("Expired verification code.");
   }
 
@@ -195,13 +195,13 @@ const resendVerificationEmail = async (email: string) => {
     type: OTP_TYPES.REGISTER,
   });
 
-  // enforce a 2-minute cooldown between OTP resends
+  // enforce a 1-minute cooldown between OTP resends
   if (otpRecord) {
     const now = Date.now();
     const updated = new Date(otpRecord.updatedAt).getTime();
-    const twoMinutes = 2 * 60 * 1000;
-    if (now - updated < twoMinutes) {
-      throw new ConflictError("OTP can only be resent after 2 minutes");
+    const oneMinutes = 1 * 60 * 1000;
+    if (now - updated < oneMinutes) {
+      throw new ConflictError("OTP can only be resent after 1 minute");
     }
   }
 
@@ -212,7 +212,7 @@ const resendVerificationEmail = async (email: string) => {
     { userId: user._id, email, type: OTP_TYPES.REGISTER },
     {
       otp,
-      expires: new Date(+new Date() + 600000),
+      expiresAt: new Date(+new Date() + 600000),
     },
     { upsert: true, runValidators: true },
   );
@@ -227,7 +227,7 @@ const resendVerificationEmail = async (email: string) => {
 
 /*============ login user  ============*/
 const loginUser = async (payload: ILogin, ip: string) => {
-  const { email, password, rememberMe } = payload;
+  const { email, password, isRememberMe } = payload;
   const user = await UserModel.findOne({ email }).select("+password");
   if (!user) {
     throw new NotFoundError(`No account found for this email address.`);
@@ -254,7 +254,6 @@ const loginUser = async (payload: ILogin, ip: string) => {
     throw new ForbiddenError(`Sorry! You have no access to login.`);
   }
 
-
   //transaction & rollback
   const session = await mongoose.startSession();
 
@@ -269,7 +268,7 @@ const loginUser = async (payload: ILogin, ip: string) => {
         tokenVersion: user.tokenVersion,
       },
       config.jwt.jwt_refresh_secret as Secret,
-      rememberMe
+      isRememberMe
         ? (config.jwt.jwt_refresh_expires_in_remember as TJwtExpiresIn)
         : (config.jwt.jwt_refresh_expires_in as TJwtExpiresIn),
     );
@@ -290,6 +289,13 @@ const loginUser = async (payload: ILogin, ip: string) => {
       );
     }
 
+    //refreshToken exipresAt
+    const expiresInMs = isRememberMe
+      ? Number(config.refreshToken.refresh_token_cookie_max_age_remember)
+      : Number(config.refreshToken.refresh_token_cookie_max_age);
+
+    const expireDate = new Date(Date.now() + expiresInMs);
+
     //set refreshTokenHash or create new session
     const refreshTokenHash = makeHash(refreshToken);
     const newSession = await SessionModel.create(
@@ -298,6 +304,7 @@ const loginUser = async (payload: ILogin, ip: string) => {
           userId: user._id,
           refreshTokenHash,
           ip,
+          expiresAt: expireDate
         },
       ],
       { session },
@@ -327,6 +334,7 @@ const loginUser = async (payload: ILogin, ip: string) => {
       email: user.email,
       fullName: user.fullName,
       profileImg: user.profileImg,
+      role: user.role
     };
   } catch (err) {
     await session.abortTransaction();
@@ -337,7 +345,7 @@ const loginUser = async (payload: ILogin, ip: string) => {
 
 /*============ login admin  ============*/
 const loginAdmin = async (payload: ILogin, ip: string) => {
-  const { email, password, rememberMe } = payload;
+  const { email, password, isRememberMe } = payload;
   const user = await UserModel.findOne({
     email,
   }).select("+password");
@@ -380,7 +388,7 @@ const loginAdmin = async (payload: ILogin, ip: string) => {
         tokenVersion: user.tokenVersion,
       },
       config.jwt.jwt_refresh_secret as Secret,
-      rememberMe
+      isRememberMe
         ? (config.jwt.jwt_refresh_expires_in_remember as TJwtExpiresIn)
         : (config.jwt.jwt_refresh_expires_in as TJwtExpiresIn),
     );
@@ -401,6 +409,14 @@ const loginAdmin = async (payload: ILogin, ip: string) => {
       );
     }
 
+
+    //refreshToken exipresAt
+    const expiresInMs = isRememberMe
+      ? Number(config.refreshToken.refresh_token_cookie_max_age_remember)
+      : Number(config.refreshToken.refresh_token_cookie_max_age);
+
+    const expireDate = new Date(Date.now() + expiresInMs);
+
     //set refreshTokenHash or create new session
     const refreshTokenHash = makeHash(refreshToken);
     const newSession = await SessionModel.create(
@@ -409,6 +425,7 @@ const loginAdmin = async (payload: ILogin, ip: string) => {
           userId: user._id,
           refreshTokenHash,
           ip,
+          expiresAt: expireDate,
         },
       ],
       { session },
@@ -446,6 +463,71 @@ const loginAdmin = async (payload: ILogin, ip: string) => {
     await session.endSession();
     throw err;
   }
+};
+
+/*=========== logout ========== */
+const logout = async (refreshToken: string) => {
+  //check session is revoked with this refreshToken
+  const refreshTokenHash = makeHash(refreshToken);
+  const session = await SessionModel.findOne({
+    refreshTokenHash,
+    revoked: false,
+  });
+
+  if (!session) {
+    throw new UnauthorizedError("Invalid refresh token");
+  }
+
+  //update session
+  await SessionModel.updateOne({ refreshTokenHash }, { revoked: true });
+  
+  return null;
+};
+
+/*=========== logout from all devices ========== */
+const logoutFromAll = async (refreshToken: string) => {
+  //token-verify
+  let decoded;
+
+  try {
+    decoded = verifyToken(
+      refreshToken,
+      config.jwt.jwt_refresh_secret as Secret,
+    );
+  } catch (error) {
+    throw new UnauthorizedError("Invalid refresh token");
+  }
+
+  //transaction & rollback
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+
+    //delete all session
+    await SessionModel.deleteMany(
+      {
+        userId: decoded.userId,
+      },
+      { session },
+    );
+
+    //update tokenVersion
+    await UserModel.updateOne(
+      { _id: decoded.userId },
+      { $inc: { tokenVersion: 1 } },
+      { session },
+    );
+
+    //transaction success
+    await session.commitTransaction();
+    await session.endSession();
+    return null;
+  } catch (err: any) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw err;
+  }
+
 };
 
 /*============ get all sessions  ============*/
@@ -711,7 +793,7 @@ const forgotPasswordVerifyOtp = async (payload: IVerifyOTp) => {
     throw new UnprocessableError("Invalid verification code.");
   }
   //check otp expired
-  if (otpRecord.expires && otpRecord.expires < new Date()) {
+  if (otpRecord.expiresAt && otpRecord.expiresAt < new Date()) {
     throw new GoneError("Expired verification code");
   }
 
@@ -727,16 +809,42 @@ const forgotPasswordVerifyOtp = async (payload: IVerifyOTp) => {
   );
 
   //create token
-  const otpToken = generateResetToken(user.email, 5);
+  const resetToken = generateResetToken(user.email, 5);
 
   return {
-    token: otpToken
+    token: resetToken
   };
 };
 
 /*============ forgot password set new password (step-03)  ============*/
 const forgotPasswordSetNewPassword = async (payload: INewPassword) => {
-  const { email, otp, password } = payload;
+  const { token, password } = payload;
+
+  // decrypt and verify the reset token
+  let email: string;
+  let expiresAt: string;
+  try {
+    const decryptedData = decrypt(token); // "user@example.com:1710234567890"
+    const parts = decryptedData?.split(":");
+    const extractedEmail = parts?.[0];
+    const extractedExpiresAt = parts?.[1];
+
+    if (!extractedEmail || !extractedExpiresAt) {
+      throw new UnprocessableError("Invalid reset token.");
+    }
+
+    email = extractedEmail;
+    expiresAt = extractedExpiresAt;
+  } catch (error) {
+    throw new UnprocessableError("Invalid reset token.");
+  }
+
+  // check token expired
+  if (!expiresAt || Number(expiresAt) < Date.now()) {
+    throw new GoneError("Reset token has expired.");
+  }
+
+  //check user exist
   const user = await UserModel.findOne({ email });
   if (!user) {
     throw new NotFoundError(`No account found for this email address.`);
@@ -752,57 +860,14 @@ const forgotPasswordSetNewPassword = async (payload: INewPassword) => {
     throw new ForbiddenError("Your account is blocked.");
   }
 
-  //check otp doesn't exist
-  const otpRecord = await OtpModel.findOne({
-    userId: user._id,
-    email,
-    otp,
-    type: OTP_TYPES.RESET_PASSWORD,
-    isVerified: true,
-  });
-  if (!otpRecord) {
-    throw new UnprocessableError("Invalid verification code");
-  }
-  //check otp expired
-  if (otpRecord.expires && otpRecord.expires < new Date()) {
-    throw new GoneError("Expired verification code");
-  }
+  //update the password
+  const hashPass = await hashedPassword(password); //hashedPassword
+  const result = await UserModel.updateOne(
+    { email },
+    { password: hashPass, passwordChangedAt: new Date() },
+  );
 
-  //transaction & rollback
-  const session = await mongoose.startSession();
-
-  try {
-    session.startTransaction();
-
-    //update the password
-    const hashPass = await hashedPassword(password); //hashedPassword
-    const result = await UserModel.updateOne(
-      { email },
-      { password: hashPass, passwordChangedAt: new Date() },
-      { session },
-    );
-
-    //delete otp
-    await OtpModel.deleteOne(
-      {
-        userId: user._id,
-        email,
-        otp,
-        type: OTP_TYPES.RESET_PASSWORD,
-        isVerified: true,
-      },
-      { session },
-    );
-
-    //transaction success
-    await session.commitTransaction();
-    return result;
-  } catch (err) {
-    await session.abortTransaction();
-    throw err;
-  } finally {
-    await session.endSession();
-  }
+  return result;
 };
 
 /*============ change status  ============*/
@@ -920,6 +985,8 @@ const AuthService = {
   resendVerificationEmail,
   loginUser,
   loginAdmin,
+  logout,
+  logoutFromAll,
   getAllSessions,
   refreshToken,
   changePassword,

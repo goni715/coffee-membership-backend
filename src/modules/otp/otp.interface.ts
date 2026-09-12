@@ -7,8 +7,8 @@ export interface IOtp extends Document {
   userId: Types.ObjectId;
   email: string;
   otp: string;
-  expires: Date;
   type: TOtpType;
+  expiresAt: Date;
   isVerified: boolean;
   createdAt: string;
   updatedAt: string;

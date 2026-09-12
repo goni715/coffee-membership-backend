@@ -11,20 +11,30 @@ import { TUserRole } from "@/modules/user/user.interface";
 
 const authMiddleware = (...roles: TUserRole[]) =>
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const token = req.headers.authorization;
+    const authHeader = req.headers.authorization;
 
-    if (!token) {
-      throw new UnauthorizedError(
-        "You are not authorized. Authentication token is required.",
-      );
+    if (!authHeader) {
+      throw new UnauthorizedError("You are not authorized.");
     }
 
+    // Bearer prefix check & extract token
+    let token: string;
+    if (authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1] as string;
+    } else {
+      token = authHeader;
+    }
+
+    if (!token) {
+     throw new UnauthorizedError("You are not authorized.");
+    }
     let decoded;
 
     // verify token
     try {
       decoded = verifyToken(token, config.jwt.jwt_access_secret as Secret);
-    } catch {
+    } catch (err) {
+      console.log(err)
       throw new UnauthorizedError(
         "You are not authorized. Invalid or expired authentication token.",
       );

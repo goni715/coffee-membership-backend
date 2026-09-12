@@ -7,10 +7,10 @@ import {
   changeStatusValidationSchema,
   deleteAccountValidationSchema,
   emailValidationSchema,
-  forgotPasswordSetNewPassSchema,
   loginValidationSchema,
   refreshTokenValidationSchema,
   registerCustomerValidationSchema,
+  setNewPasswordValidationSchema,
   verifyOtpValidationSchema,
 } from "./auth.validation";
 import AuthMiddleware from "@/middlewares/authMiddleware";
@@ -99,7 +99,7 @@ router.post(
 
 router.post(
   "/forgot-password/set-new-password",
-  validationMiddleware(forgotPasswordSetNewPassSchema),
+  validationMiddleware(setNewPasswordValidationSchema),
   AuthController.forgotPasswordSetNewPassword,
 );
 
