@@ -24,10 +24,19 @@ const getOwners = asyncHandler(async (req, res) => {
   });
 });
 
+const updateOwner = asyncHandler(async (req, res) => {
+  const result = await OwnerService.updateOwner(req.body);
+  res.status(200).json({
+    success: true,
+    message: "Owner is updated successfully",
+    data: result,
+  });
+});
 
 const OwnerController = {
     createOwner,
-    getOwners
+    getOwners,
+    updateOwner
 }
 
 export default OwnerController;

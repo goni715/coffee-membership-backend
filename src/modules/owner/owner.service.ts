@@ -125,9 +125,16 @@ const getOwners = async (query: TOwnerQuery) => {
 };
 
 
+/*============== update owner ================== */
+const updateOwner = async (payload: Partial<IUser>) => {
+  return payload;
+}
+
+
 const OwnerService = {
   createOwner,
-  getOwners
+  getOwners,
+  updateOwner
 }
 
 export default OwnerService;

@@ -8,3 +8,5 @@ export type TOwnerQuery = {
   sortOrder?: "asc" | "desc";
   status?: TAccountStatus;
 };
+
+

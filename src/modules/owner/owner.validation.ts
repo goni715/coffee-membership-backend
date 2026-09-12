@@ -7,3 +7,8 @@ export const createOwnerValidationSchema = z.object({
   phone: phoneNumberZodSchema,
   password: passwordZodSchema.optional(),
 });
+
+export const updateOwnerValidationSchema = z.object({
+  fullName: fullNameZodSchema,
+  phone: phoneNumberZodSchema,
+});
