@@ -310,6 +310,14 @@ const loginUser = async (payload: ILogin, ip: string) => {
       { session },
     );
 
+
+    //update the lastLoginAt
+    await UserModel.updateOne(
+      { _id: user._id },
+      { lastLoginAt: new Date() },
+      { session },
+    );
+
     // transaction success
     await session.commitTransaction();
     await session.endSession();
@@ -431,6 +439,14 @@ const loginAdmin = async (payload: ILogin, ip: string) => {
       { session },
     );
 
+
+    //update the lastLoginAt
+    await UserModel.updateOne(
+      { _id: user._id },
+      { lastLoginAt: new Date() },
+      { session },
+    );
+
     // transaction success
     await session.commitTransaction();
     await session.endSession();
@@ -480,7 +496,7 @@ const logout = async (refreshToken: string) => {
 
   //update session
   await SessionModel.updateOne({ refreshTokenHash }, { revoked: true });
-  
+
   return null;
 };
 

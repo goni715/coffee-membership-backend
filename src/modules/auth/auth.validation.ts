@@ -4,7 +4,7 @@ import { Types } from "mongoose";
 
 export const phoneRegex = /^\+?\d{1,14}$/;
 
-const fullNameZodSchema = z
+export const fullNameZodSchema = z
   .string({
     error: (issue) =>
       issue.input === undefined
@@ -22,7 +22,7 @@ export const emailZodSchema = z.email({
     issue.input === undefined ? "email is required" : "Invalid email address",
 });
 
-const passwordZodSchema = z
+export const passwordZodSchema = z
   .string({
     error: (issue) =>
       issue.input === undefined
@@ -50,7 +50,7 @@ export const emailValidationSchema = z.object({
 });
 
 
-const phoneNumberZodSchema = z
+export const phoneNumberZodSchema = z
   .string({
     error: (issue) =>
       issue.input === undefined

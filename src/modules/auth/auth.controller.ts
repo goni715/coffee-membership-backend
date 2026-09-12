@@ -2,16 +2,10 @@ import { Request, Response } from "express";
 import asyncHandler from "@/utils/asyncHandler";
 import AuthService from "./auth.service";
 import config from "@/config";
-import UserModel from "@/modules/user/user.model";
-import makeHash from "@/utils/makeHash";
 import NotFoundError from "@/errors/NotFoundError";
 import SessionModel from "@/modules/session/session.model";
-import { Secret } from "jsonwebtoken";
-import mongoose from "mongoose";
-import UnauthorizedError from "@/errors/UnauthorizedError";
-import isNotObjectId from "@/utils/isNotObjectId";
 import BadRequestError from "@/errors/BadRequestError";
-import { verifyToken } from "@/helpers/JwtHelper";
+import isNotObjectId from "@/utils/isNotObjectId";
 
 const registerCustomer = asyncHandler(async (req, res) => {
   const result = await AuthService.registerCustomer(req.body);
