@@ -7,6 +7,7 @@ import { makeFilterQuery, makeSearchQuery } from "@/helpers/QueryBuilder";
 import { TOwnerQuery } from "./owner.interface";
 import { OWNER_SEARCHABLE_FIELDS } from "./owner.constant";
 import { PipelineStage } from "mongoose";
+import NotFoundError from "@/errors/NotFoundError";
 
 
 
@@ -127,11 +128,35 @@ const getOwners = async (query: TOwnerQuery) => {
 
 /*============== update owner ================== */
 const updateOwner = async (ownerId: string, payload: Partial<IUser>) => {
-  return payload;
+  //check owner
+  const owner = await UserModel.findOne({
+    role: USER_ROLES.OWNER,
+    _id: ownerId
+  })
+  if (!owner) {
+    throw new NotFoundError("Owner not found with the provided ID");
+  }
+
+  //update owner
+  const result = await UserModel.updateOne({ _id: ownerId }, payload);
+  return result;
 }
+
+
 /*============== delete owner ================== */
 const deleteOwner = async (ownerId: string) => {
-  return ownerId;
+  //check owner
+  const owner = await UserModel.findOne({
+    role: USER_ROLES.OWNER,
+    _id: ownerId
+  })
+  if (!owner) {
+    throw new NotFoundError("Owner not found with the provided ID");
+  }
+
+  //delete owner
+  const result = await UserModel.deleteOne({ _id: ownerId });
+  return result;
 }
 
 
