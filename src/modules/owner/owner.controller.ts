@@ -25,7 +25,8 @@ const getOwners = asyncHandler(async (req, res) => {
 });
 
 const updateOwner = asyncHandler(async (req, res) => {
-  const result = await OwnerService.updateOwner(req.body);
+  const { ownerId } = req.params;
+  const result = await OwnerService.updateOwner(ownerId as string, req.body);
   res.status(200).json({
     success: true,
     message: "Owner is updated successfully",
@@ -33,10 +34,21 @@ const updateOwner = asyncHandler(async (req, res) => {
   });
 });
 
+const deleteOwner = asyncHandler(async (req, res) => {
+  const { ownerId } = req.params;
+  const result = await OwnerService.deleteOwner(ownerId as string);
+  res.status(200).json({
+    success: true,
+    message: "Owner is deleted successfully",
+    data: result,
+  });
+});
+
 const OwnerController = {
     createOwner,
     getOwners,
-    updateOwner
+    updateOwner,
+    deleteOwner
 }
 
 export default OwnerController;

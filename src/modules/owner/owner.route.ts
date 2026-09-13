@@ -20,11 +20,17 @@ router.get(
   OwnerController.getOwners,
 );
 
-router.post(
+router.patch(
   "/update-owner/:ownerId",
   authMiddleware(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
   validationMiddleware(updateOwnerValidationSchema),
   OwnerController.updateOwner,
+);
+
+router.delete(
+  "/delete-owner/:ownerId",
+  authMiddleware(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+  OwnerController.deleteOwner,
 );
 
 const OwnerRoutes = router;

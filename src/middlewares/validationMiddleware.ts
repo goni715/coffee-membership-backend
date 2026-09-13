@@ -10,10 +10,17 @@ const validationMiddleware = (schema: ZodType<any, any, any>) => {
   ): Promise<any> => {
     try {
       const parsedData = await schema.parseAsync({
-        ...req.body,
-        ...req.cookies,
+        body: req.body,
+        params: req.params,
+        query: req.query,
+        cookies: req.cookies,
       });
-      req.body = parsedData;
+
+      //assign parsed data
+      if (parsedData.body) req.body = parsedData.body;
+      if (parsedData.params) req.params = parsedData.params;
+      if (parsedData.query) req.query = parsedData.query;
+
       next();
     } catch (error) {
       if (error instanceof ZodError) {

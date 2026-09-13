@@ -46,9 +46,10 @@ const otpZodSchema = z
   .trim();
 
 export const emailValidationSchema = z.object({
-  email: emailZodSchema,
+  body: z.object({
+    email: emailZodSchema,
+  }),
 });
-
 
 export const phoneNumberZodSchema = z
   .string({
@@ -59,146 +60,181 @@ export const phoneNumberZodSchema = z
   })
   .trim()
   .regex(phoneRegex, {
-    message: "Please enter a valid phone number (e.g., +1234567890 or 1234567890)",
+    message:
+      "Please enter a valid phone number (e.g., +1234567890 or 1234567890)",
   });
 
 export const registerCustomerValidationSchema = z.object({
-  fullName: fullNameZodSchema,
-  email: emailZodSchema,
-  phone: phoneNumberZodSchema,
-  password: passwordZodSchema,
-});
-
-export const verifyOtpValidationSchema = z.object({
-  email: emailZodSchema,
-  otp: otpZodSchema,
-});
-
-export const loginValidationSchema = z.object({
-  email: emailZodSchema,
-  password: passwordZodSchema,
-  isRememberMe: z
-    .boolean({
-      error: (issue) =>
-        issue.input === undefined
-          ? ""
-          : "isRememberMe must be boolean value",
-    })
-    .optional()
-    .default(false),
-});
-
-export const refreshTokenValidationSchema = z.object({
-  refreshToken: z.string({
-    error: (issue) =>
-      issue.input === undefined
-        ? "Refresh token is required"
-        : "refreshToken must be string",
+  body: z.object({
+    fullName: fullNameZodSchema,
+    email: emailZodSchema,
+    phone: phoneNumberZodSchema,
+    password: passwordZodSchema,
   }),
 });
 
-export const changePasswordValidationSchema = z
-  .object({
-    currentPassword: z
-      .string({
-        error: (issue) =>
-          issue.input === undefined
-            ? "currentPassword is required"
-            : "currentPassword must be string",
-      })
-      .min(6, "Current password must be at least 6 characters long")
-      .max(60, "Current password must not exceed 60 characters")
-      .trim(),
-    newPassword: z
-      .string({
-        error: (issue) =>
-          issue.input === undefined
-            ? "newPassword is required"
-            : "newPassword must be string",
-      })
-      .min(6, "New password must be at least 6 characters long")
-      .max(60, "New password must not exceed 60 characters")
-      .regex(
-        /^(?=.*[a-zA-Z])(?=.*\d)/,
-        "New password must contain at least one letter and one number",
-      )
-      .trim(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.newPassword === data.currentPassword) {
-      ctx.addIssue({
-        path: ["newPassword"],
-        message: "New password must be different from the current password",
-        code: "custom",
-      });
-    }
-  });
-
-export const setNewPasswordValidationSchema = z.object({
-  token: z
-    .string({
-      error: (issue) =>
-        issue.input === undefined
-          ? "token is required"
-          : "token must be string",
-    })
-    .trim()
-    .regex(/^[A-Za-z0-9_-]+$/, "Invalid token format."),
-  password: passwordZodSchema,
+export const verifyOtpValidationSchema = z.object({
+  body: z.object({
+    email: emailZodSchema,
+    otp: otpZodSchema,
+  }),
 });
 
+export const loginValidationSchema = z.object({
+  body: z.object({
+    email: emailZodSchema,
+    password: passwordZodSchema,
+    isRememberMe: z
+      .boolean({
+        error: (issue) =>
+          issue.input === undefined
+            ? ""
+            : "isRememberMe must be boolean value",
+      })
+      .optional()
+      .default(false),
+  }),
+});
+
+export const refreshTokenValidationSchema = z
+  .object({
+    cookies: z
+      .object({
+        refreshToken: z.string().optional(),
+      })
+      .optional(),
+    body: z
+      .object({
+        refreshToken: z.string().optional(),
+      })
+      .optional(),
+  })
+  .refine(
+    (data) =>
+      Boolean(data?.cookies?.refreshToken || data?.body?.refreshToken),
+    {
+      message: "Refresh token is required in cookie or body",
+      path: ["refreshToken"],
+    },
+  );
+
+export const changePasswordValidationSchema = z.object({
+  body: z
+    .object({
+      currentPassword: z
+        .string({
+          error: (issue) =>
+            issue.input === undefined
+              ? "currentPassword is required"
+              : "currentPassword must be string",
+        })
+        .min(6, "Current password must be at least 6 characters long")
+        .max(60, "Current password must not exceed 60 characters")
+        .trim(),
+      newPassword: z
+        .string({
+          error: (issue) =>
+            issue.input === undefined
+              ? "newPassword is required"
+              : "newPassword must be string",
+        })
+        .min(6, "New password must be at least 6 characters long")
+        .max(60, "New password must not exceed 60 characters")
+        .regex(
+          /^(?=.*[a-zA-Z])(?=.*\d)/,
+          "New password must contain at least one letter and one number",
+        )
+        .trim(),
+    })
+    .superRefine((data, ctx) => {
+      if (data.newPassword === data.currentPassword) {
+        ctx.addIssue({
+          path: ["newPassword"],
+          message: "New password must be different from the current password",
+          code: "custom",
+        });
+      }
+    }),
+});
+
+export const setNewPasswordValidationSchema = z.object({
+  body: z.object({
+    token: z
+      .string({
+        error: (issue) =>
+          issue.input === undefined
+            ? "token is required"
+            : "token must be string",
+      })
+      .trim()
+      .regex(/^[A-Za-z0-9_-]+$/, "Invalid token format."),
+    password: passwordZodSchema,
+  }),
+});
 
 export const changeStatusValidationSchema = z.object({
-  status: z
-    .string({
-      error: (issue) =>
-        issue.input === undefined
-          ? "status is required"
-          : `status must be 'blocked' or 'active'`,
-    })
-    .refine((val) => ["blocked", "active"].includes(val), {
-      message: `status must be 'blocked' or 'active'`,
+  params: z.object({
+    userId: z.string().refine((id) => Types.ObjectId.isValid(id), {
+      message: "userId must be a valid ObjectId",
     }),
+  }),
+  body: z.object({
+    status: z
+      .string({
+        error: (issue) =>
+          issue.input === undefined
+            ? "status is required"
+            : `status must be 'blocked' or 'active'`,
+      })
+      .refine((val) => ["blocked", "active"].includes(val), {
+        message: `status must be 'blocked' or 'active'`,
+      }),
+  }),
 });
 
 export const changeMultipleStatusValidationSchema = z.object({
-  userIds: z
-    .array(
-      z.string().refine((id) => Types.ObjectId.isValid(id), {
-        message: "userIds must be an array of valid ObjectId",
-      }),
-      {
-        error: (issue) =>
-          issue.input === undefined
-            ? "userIds must be at least one value"
-            : `userIds must be an array`,
-      },
-    )
-    .superRefine((arr, ctx) => {
-      if (arr && arr?.length > 0) {
-        const duplicates = arr.filter(
-          (item, index) => arr.indexOf(item) !== index,
-        );
-        if (duplicates.length > 0) {
-          ctx.addIssue({
-            code: "custom",
-            message: "userIds array must not contain duplicate values",
-          });
-        }
-      }
-    }),
-  status: z
-    .string({
-      error: (issue) =>
-        issue.input === undefined
-          ? "status is required"
-          : `status must be 'blocked' or 'active'`,
-    })
-    .refine((val) => ["blocked", "active"].includes(val), {
-      message: `status must be 'blocked' or 'active'`,
+  body: z
+    .object({
+      userIds: z
+        .array(
+          z.string().refine((id) => Types.ObjectId.isValid(id), {
+            message: "userIds must be an array of valid ObjectId",
+          }),
+          {
+            error: (issue) =>
+              issue.input === undefined
+                ? "userIds must be at least one value"
+                : `userIds must be an array`,
+          },
+        )
+        .superRefine((arr, ctx) => {
+          if (arr && arr?.length > 0) {
+            const duplicates = arr.filter(
+              (item, index) => arr.indexOf(item) !== index,
+            );
+            if (duplicates.length > 0) {
+              ctx.addIssue({
+                code: "custom",
+                message: "userIds array must not contain duplicate values",
+              });
+            }
+          }
+        }),
+      status: z
+        .string({
+          error: (issue) =>
+            issue.input === undefined
+              ? "status is required"
+              : `status must be 'blocked' or 'active'`,
+        })
+        .refine((val) => ["blocked", "active"].includes(val), {
+          message: `status must be 'blocked' or 'active'`,
+        }),
     }),
 });
 
 export const deleteAccountValidationSchema = z.object({
-  password: passwordZodSchema,
+  body: z.object({
+    password: passwordZodSchema,
+  }),
 });
