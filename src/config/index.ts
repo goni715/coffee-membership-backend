@@ -6,7 +6,7 @@ dotenv.config({ path: path.join(process.cwd(), ".env") });
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production"]).default('development'),
-  PORT: z.string(),
+  PORT: z.string().default('5050'),
   DATABASE_URL: z.string(),
   BCRPYT_SALT_ROUNDS: z.string(),
   ENCRYPTION_KEY: z.string(),
