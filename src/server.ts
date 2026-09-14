@@ -5,7 +5,10 @@ import dbCoonect from "@/utils/dbConnect";
 import dns from "node:dns/promises";
 import config from "@/config";
 
-dns.setServers(["1.1.1.1"]);
+if (config.node_env !== "production") {
+  dns.setServers(["1.1.1.1"]);
+}
+
 
 const server = http.createServer(app);
 

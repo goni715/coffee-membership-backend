@@ -9,7 +9,9 @@ const app_1 = __importDefault(require("./app"));
 const dbConnect_1 = __importDefault(require("./utils/dbConnect"));
 const promises_1 = __importDefault(require("node:dns/promises"));
 const config_1 = __importDefault(require("./config"));
-promises_1.default.setServers(["1.1.1.1"]);
+if (config_1.default.node_env !== "production") {
+    promises_1.default.setServers(["1.1.1.1"]);
+}
 const server = http_1.default.createServer(app_1.default);
 const port = config_1.default.port || 5050;
 async function main() {
