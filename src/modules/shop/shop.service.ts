@@ -7,6 +7,10 @@ import BadRequestError from "@/errors/BadRequestError";
 import uploadToCloudinary from "@/utils/uploadToCloudinary";
 import convertToSlug from "@/utils/convertToSlug";
 import { makeFilterQuery, makeSearchQuery } from "@/helpers/QueryBuilder";
+import { PipelineStage, Types } from "mongoose";
+import makePublicID from "@/utils/makePublicID";
+import deleteFromCloudinary from "@/utils/deleteFromCloudinary";
+import NotFoundError from "@/errors/NotFoundError";
 
 /*============== create shop ================== */
 const createShop = async (ownerId: string, req: any) => {
@@ -80,30 +84,47 @@ const getShops = async (query: TShopQuery) => {
     }
 
     //common pipeline stage
-    // const commonPipeline: PipelineStage = {
-    //     $match: {
-    //         role: USER_ROLES.OWNER,
-    //         ...searchQuery,
-    //         ...filterQuery,
-    //     },
-    // }
-
-    const shops = await ShopModel.aggregate([
+    const commonPipeline: PipelineStage[] = [
+        {
+            $lookup: {
+                from: "users",
+                localField: "ownerId",
+                foreignField: "_id",
+                as: "owner"
+            }
+        },
+        {
+            $unwind: "$owner"
+        },
         {
             $project: {
                 _id: 1,
-                name: 1,
-                image: 1,
-                contactNumber: 1,
-                description: 1,
-                address: 1,
-                dailyBenefitDescription: 1,
-                qrCode: 1,
-                status: 1,
-                lastLoginAt: 1,
-                createdAt: 1,
+                ownerName: "$owner.fullName",
+                ownerEmail: "$owner.email",
+                ownerPhone: "$owner.phone",
+                ownerImage: "$owner.profileImg",
+                name: "$name",
+                image: "$image",
+                contactNumber: "$contactNumber",
+                description: "$description",
+                address: "$address",
+                dailyBenefitDescription: "$dailyBenefitDescription",
+                qrCode: "$qrCode",
+                status: "$status",
+                createdAt: "$createdAt",
+                updatedAt: "$updatedAt",
             },
         },
+        {
+            $match: {
+                ...searchQuery,
+                ...filterQuery
+            }
+        },
+    ]
+
+    const shops = await ShopModel.aggregate([
+        ...commonPipeline,
         { $sort: { [sortBy]: sortDirection } },
         { $skip: skip },
         { $limit: Number(limit) },
@@ -111,7 +132,7 @@ const getShops = async (query: TShopQuery) => {
 
     // total count
     const totalCountResult = await ShopModel.aggregate([
-        // commonPipeline,
+        ...commonPipeline,
         { $count: "totalCount" },
     ]);
 
@@ -131,10 +152,102 @@ const getShops = async (query: TShopQuery) => {
     return result;
 };
 
+/*============== get my shop ================== */
+const getMyShop = async (ownerId: string) => {
+
+    const result = await ShopModel.aggregate([
+        {
+            $match: {
+                ownerId: new Types.ObjectId(ownerId)
+            }
+        },
+        {
+            $lookup: {
+                from: "openinghours",
+                localField: "_id",
+                foreignField: "shopId",
+                as: "openingHours"
+            }
+        },
+        {
+            $project: {
+                name: "$name",
+                image: "$image",
+                contactNumber: "$contactNumber",
+                description: "$description",
+                address: "$address",
+                dailyBenefitDescription: "$dailyBenefitDescription",
+                qrCode: "$qrCode",
+                status: "$status",
+                totalActiveCustomers: "$totalActiveCustomers",
+                openingHours: "$openingHours",
+                createdAt: "$createdAt",
+                updatedAt: "$updatedAt",
+            },
+        }
+    ]);
+
+    if (result.length === 0) {
+        throw new NotFoundError("No shop found associated with your account.");
+    }
+
+    return result[0];
+};
+
+/*============== update shop ================== */
+const updateShop = async (ownerId: string, req: any) => {
+    const payload: Partial<IShop> = req.body;
+
+    //check shop
+    const shop = await ShopModel.findOne({ ownerId })
+    if (!shop) {
+        throw new NotFoundError("No shop found associated with your account.");
+    }
+
+
+    // if name is available
+    if (payload.name) {
+        //generate slug
+        const slug = convertToSlug(payload.name);
+        payload.slug = slug;
+
+        //check shop slug
+        const isShopExist = await ShopModel.findOne({
+            ownerId: {
+                $ne: ownerId
+            },
+            slug
+        });
+        if (isShopExist) {
+            throw new ConflictError("Shop name already exists.");
+        }
+    }
+
+    // if image is available
+    if (req.file) {
+        //upload image
+        const image = await uploadToCloudinary(req?.file?.path as string, "shop");
+        payload.image = image.img_url;
+    }
+
+    // update shop
+    const result = await ShopModel.updateOne({ ownerId }, payload);
+
+    //delete existing image
+    if (req.file) {
+        const public_id = makePublicID(shop?.image, "shop");
+        await deleteFromCloudinary(public_id as string);
+    }
+
+    return result;
+}
+
 
 const ShopService = {
     createShop,
-    getShops
+    getShops,
+    getMyShop,
+    updateShop
 }
 
 export default ShopService

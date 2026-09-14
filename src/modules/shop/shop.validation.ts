@@ -54,11 +54,6 @@ export const createShopValidationSchema = z.object({
 });
 
 export const updateShopValidationSchema = z.object({
-    params: z.object({
-        shopId: z.string().refine((id) => !isNotObjectId(id), {
-            message: "shopId must be a valid ObjectId",
-        }),
-    }),
     body: z.object({
         name: z
             .string({
@@ -106,8 +101,4 @@ export const updateShopValidationSchema = z.object({
             .max(200, "Address must be at most 200 characters long")
             .optional(),
     })
-        .refine((data) => Object.values(data).some((value) => value !== undefined), {
-            message: "At least one field must be provided to update",
-            path: ["body"],
-        })
 });

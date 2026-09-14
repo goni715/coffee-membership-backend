@@ -5,7 +5,10 @@ export const SHOP_STATUSES = {
 } as const;
 
 export const SHOP_SEARCHABLE_FIELDS = [
-  "shopName",
+  "ownerName",
+  "ownerEmail",
+  "ownerPhone",
+  "name",
   "contactNumber",
   "address",
   "description",
