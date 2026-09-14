@@ -1,0 +1,32 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const auth_controller_1 = __importDefault(require("./auth.controller"));
+const validationMiddleware_1 = __importDefault(require("../../middlewares/validationMiddleware"));
+const auth_validation_1 = require("./auth.validation");
+const authMiddleware_1 = __importDefault(require("../../middlewares/authMiddleware"));
+const user_constant_1 = require("../user/user.constant");
+const router = express_1.default.Router();
+router.post("/register-customer", (0, validationMiddleware_1.default)(auth_validation_1.registerCustomerValidationSchema), auth_controller_1.default.registerCustomer);
+router.post("/verify-account", (0, validationMiddleware_1.default)(auth_validation_1.verifyOtpValidationSchema), auth_controller_1.default.verifyAccount);
+router.post("/resend-verification-email", (0, validationMiddleware_1.default)(auth_validation_1.emailValidationSchema), auth_controller_1.default.resendVerificationEmail);
+router.post("/login-user", (0, validationMiddleware_1.default)(auth_validation_1.loginValidationSchema), auth_controller_1.default.loginUser);
+router.post("/login-admin", (0, validationMiddleware_1.default)(auth_validation_1.loginValidationSchema), auth_controller_1.default.loginAdmin);
+router.post("/logout", (0, authMiddleware_1.default)(user_constant_1.USER_ROLES.CUSTOMER, user_constant_1.USER_ROLES.ADMIN, user_constant_1.USER_ROLES.SUPER_ADMIN), (0, validationMiddleware_1.default)(auth_validation_1.refreshTokenValidationSchema), auth_controller_1.default.logout);
+router.post("/logout-all", (0, authMiddleware_1.default)(user_constant_1.USER_ROLES.CUSTOMER, user_constant_1.USER_ROLES.ADMIN, user_constant_1.USER_ROLES.SUPER_ADMIN), (0, validationMiddleware_1.default)(auth_validation_1.refreshTokenValidationSchema), auth_controller_1.default.logoutAll);
+router.patch("/revoke-session/:sessionId", (0, authMiddleware_1.default)(user_constant_1.USER_ROLES.CUSTOMER, user_constant_1.USER_ROLES.ADMIN, user_constant_1.USER_ROLES.SUPER_ADMIN), auth_controller_1.default.revokeSession);
+router.get("/get-all-sessions", (0, authMiddleware_1.default)(user_constant_1.USER_ROLES.CUSTOMER, user_constant_1.USER_ROLES.ADMIN, user_constant_1.USER_ROLES.SUPER_ADMIN), auth_controller_1.default.getAllSessions);
+router.post("/refresh-token", (0, validationMiddleware_1.default)(auth_validation_1.refreshTokenValidationSchema), auth_controller_1.default.refreshToken);
+router.patch("/change-password", (0, authMiddleware_1.default)(user_constant_1.USER_ROLES.CUSTOMER, user_constant_1.USER_ROLES.ADMIN, user_constant_1.USER_ROLES.SUPER_ADMIN), (0, validationMiddleware_1.default)(auth_validation_1.changePasswordValidationSchema), auth_controller_1.default.changePassword);
+//forgot-password with otp
+router.post("/forgot-password/send-otp", (0, validationMiddleware_1.default)(auth_validation_1.emailValidationSchema), auth_controller_1.default.forgotPasswordSendOtp);
+router.post("/forgot-password/verify-otp", (0, validationMiddleware_1.default)(auth_validation_1.verifyOtpValidationSchema), auth_controller_1.default.forgotPasswordVerifyOtp);
+router.post("/forgot-password/set-new-password", (0, validationMiddleware_1.default)(auth_validation_1.setNewPasswordValidationSchema), auth_controller_1.default.forgotPasswordSetNewPassword);
+router.patch("/change-status/:userId", (0, authMiddleware_1.default)(user_constant_1.USER_ROLES.ADMIN, user_constant_1.USER_ROLES.SUPER_ADMIN), (0, validationMiddleware_1.default)(auth_validation_1.changeStatusValidationSchema), auth_controller_1.default.changeStatus);
+router.patch("/change-multiple-status", (0, authMiddleware_1.default)(user_constant_1.USER_ROLES.ADMIN, user_constant_1.USER_ROLES.SUPER_ADMIN), (0, validationMiddleware_1.default)(auth_validation_1.changeMultipleStatusValidationSchema), auth_controller_1.default.changeMultipleStatus);
+router.delete("/delete-account", (0, authMiddleware_1.default)(user_constant_1.USER_ROLES.CUSTOMER), (0, validationMiddleware_1.default)(auth_validation_1.deleteAccountValidationSchema), auth_controller_1.default.deleteAccount);
+const AuthRoutes = router;
+exports.default = AuthRoutes;
