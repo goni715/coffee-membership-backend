@@ -10,10 +10,10 @@ const validationMiddleware = (schema: ZodType<any, any, any>) => {
   ): Promise<any> => {
     try {
       const parsedData = await schema.parseAsync({
-        body: req.body,
-        params: req.params,
-        query: req.query,
-        cookies: req.cookies,
+        body: req.body || {},
+        params: req.params || {},
+        query: req.query || {},
+        cookies: req.cookies || {},
       });
 
       // assign parsed data
@@ -31,9 +31,9 @@ const validationMiddleware = (schema: ZodType<any, any, any>) => {
             // Strip 'body', 'params', 'query', 'cookies' prefix from path
             const pathArray =
               e.path.length > 1 &&
-              ["body", "params", "query", "cookies"].includes(
-                String(e.path[0]),
-              )
+                ["body", "params", "query", "cookies"].includes(
+                  String(e.path[0]),
+                )
                 ? e.path.slice(1)
                 : e.path;
 

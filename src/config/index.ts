@@ -101,7 +101,7 @@ export default {
     super_admin_phone_number: env.SUPER_ADMIN_PHONE_NUMBER,
     super_admin_password: env.SUPER_ADMIN_PASSWORD,
     admin_default_password: env.ADMIN_DEFAULT_PASSWORD,
-    owner_default_password: env.ADMIN_DEFAULT_PASSWORD,
+    owner_default_password: env.OWNER_DEFAULT_PASSWORD,
   },
   cloudinary: {
     cloud_name: env.CLOUD_NAME,

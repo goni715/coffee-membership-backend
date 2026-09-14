@@ -25,7 +25,10 @@ const openingHourSchema = new Schema<IOpeningHour>(
             default: false
         },
     },
-    { timestamps: true },
+    {
+        timestamps: true,
+        versionKey: false
+    },
 );
 
 export const OpeningHourModel = model<IOpeningHour>("OpeningHour", openingHourSchema);

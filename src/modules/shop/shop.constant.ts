@@ -20,3 +20,9 @@ export const SHOP_VALID_FIELDS: string[] = [
   "status",
   "city",
 ];
+
+
+export const QRCODE_PREFIX = {
+  SHOP: "SHOP",
+  COFFEE: "COFFEE",
+} as const;

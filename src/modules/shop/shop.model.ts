@@ -33,11 +33,6 @@ const shopSchema = new Schema<IShop>(
       required: [true, "Address is required"],
       trim: true,
     },
-    city: {
-      type: String,
-      required: [true, "City is required"],
-      trim: true,
-    },
     dailyBenefitDescription: {
       type: String,
       default: "",
