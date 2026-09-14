@@ -8,6 +8,7 @@ import { TOwnerQuery } from "./owner.interface";
 import { OWNER_SEARCHABLE_FIELDS } from "./owner.constant";
 import { PipelineStage } from "mongoose";
 import NotFoundError from "@/errors/NotFoundError";
+import ShopModel from "../shop/shop.model";
 
 
 
@@ -152,6 +153,12 @@ const deleteOwner = async (ownerId: string) => {
   })
   if (!owner) {
     throw new NotFoundError("Owner not found with the provided ID");
+  }
+
+  //check owner is associated with shop
+  const associatedWithShop = await ShopModel.findOne({ ownerId })
+  if (associatedWithShop) {
+    throw new ConflictError("Unable to delete. This owner is associated with an existing shop.");
   }
 
   //delete owner

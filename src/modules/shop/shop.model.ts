@@ -14,9 +14,15 @@ const shopSchema = new Schema<IShop>(
       required: [true, "Name is required"],
       trim: true,
     },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
     image: {
       type: String,
-      required: [true, "Name is required"],
+      required: [true, "image is required"],
     },
     contactNumber: {
       type: String,
@@ -37,9 +43,9 @@ const shopSchema = new Schema<IShop>(
       type: String,
       default: "",
     },
-    activationQrCode: {
+    qrCode: {
       type: String,
-      required: [true, "Activation QR code is required"],
+      required: [true, "QR code is required"],
       unique: true,
       trim: true,
     },

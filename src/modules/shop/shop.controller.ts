@@ -1,8 +1,11 @@
 import asyncHandler from "@/utils/asyncHandler";
 import ShopService from "./shop.service";
+import pickValidFields from "@/utils/pickValidFields";
+import { SHOP_VALID_FIELDS } from "./shop.constant";
 
 const createShop = asyncHandler(async (req, res) => {
-    const result = await ShopService.createShop(req.body);
+    const { userId } = req.headers;
+    const result = await ShopService.createShop(userId as string, req);
     res.status(200).json({
         success: true,
         message: "Shop is created successfully",
@@ -10,9 +13,20 @@ const createShop = asyncHandler(async (req, res) => {
     });
 });
 
+const getShops = asyncHandler(async (req, res) => {
+    const validatedQuery = pickValidFields(req.query, SHOP_VALID_FIELDS);
+    const result = await ShopService.getShops(validatedQuery);
+    res.status(200).json({
+        success: true,
+        message: "Shops are retrieved successfully",
+        data: result,
+    });
+});
+
 
 const ShopController = {
-    createShop
+    createShop,
+    getShops
 }
 
 export default ShopController

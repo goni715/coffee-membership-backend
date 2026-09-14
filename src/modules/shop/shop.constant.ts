@@ -6,7 +6,7 @@ export const SHOP_STATUSES = {
 
 export const SHOP_SEARCHABLE_FIELDS = [
   "shopName",
-  "city",
+  "contactNumber",
   "address",
   "description",
 ];
