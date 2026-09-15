@@ -23,6 +23,12 @@ router.get(
 );
 
 router.get(
+  "/customer-shops",
+  authMiddleware(USER_ROLES.CUSTOMER),
+  ShopController.getCustomerShops,
+);
+
+router.get(
   "/my-shop",
   authMiddleware(USER_ROLES.OWNER),
   ShopController.getMyShop,

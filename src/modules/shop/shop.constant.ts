@@ -14,6 +14,13 @@ export const SHOP_SEARCHABLE_FIELDS = [
   "description",
 ];
 
+export const CUSTOMER_SHOP_SEARCHABLE_FIELDS = [
+  "name",
+  "contactNumber",
+  "address",
+  "description",
+];
+
 export const SHOP_VALID_FIELDS: string[] = [
   "searchTerm",
   "page",
@@ -21,7 +28,14 @@ export const SHOP_VALID_FIELDS: string[] = [
   "sortBy",
   "sortOrder",
   "status",
-  "city",
+];
+
+export const CUSTOMER_SHOP_VALID_FIELDS: string[] = [
+  "searchTerm",
+  "page",
+  "limit",
+  "sortBy",
+  "sortOrder",
 ];
 
 

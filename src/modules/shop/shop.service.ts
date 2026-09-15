@@ -1,6 +1,6 @@
 import generateQrCode from "@/utils/generateQrCode";
 import { IShop, TShopQuery } from "./shop.interface"
-import { QRCODE_PREFIX, SHOP_SEARCHABLE_FIELDS } from "./shop.constant";
+import { CUSTOMER_SHOP_SEARCHABLE_FIELDS, QRCODE_PREFIX, SHOP_SEARCHABLE_FIELDS, SHOP_STATUSES } from "./shop.constant";
 import ShopModel from "./shop.model";
 import ConflictError from "@/errors/ConflictError";
 import BadRequestError from "@/errors/BadRequestError";
@@ -152,6 +152,93 @@ const getShops = async (query: TShopQuery) => {
     return result;
 };
 
+/*============== get customer shops ================== */
+const getCustomerShops = async (query: TShopQuery) => {
+    const {
+        searchTerm,
+        page = 1,
+        limit = 10,
+        sortOrder = "desc",
+        sortBy = "createdAt",
+        ...filters // additional filters
+    } = query;
+
+    // 1. set up pagination
+    const skip = (Number(page) - 1) * Number(limit);
+
+    //2. setup sorting
+    const sortDirection = sortOrder === "asc" ? 1 : -1;
+
+    //3. setup searching
+    let searchQuery = {};
+    if (searchTerm) {
+        searchQuery = makeSearchQuery(searchTerm, CUSTOMER_SHOP_SEARCHABLE_FIELDS);
+    }
+
+    //4 setup filters
+    let filterQuery = {};
+    if (filters) {
+        filterQuery = makeFilterQuery(filters);
+    }
+
+    //common pipeline stage
+    const commonPipeline: PipelineStage[] = [
+        {
+            $match: {
+                status: SHOP_STATUSES.ACTIVE
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                name: "$name",
+                image: "$image",
+                contactNumber: "$contactNumber",
+                description: "$description",
+                address: "$address",
+                dailyBenefitDescription: "$dailyBenefitDescription",
+                qrCode: "$qrCode",
+                createdAt: "$createdAt",
+                updatedAt: "$updatedAt",
+            },
+        },
+        {
+            $match: {
+                ...searchQuery,
+                ...filterQuery
+            }
+        },
+    ]
+
+    const shops = await ShopModel.aggregate([
+        ...commonPipeline,
+        { $sort: { [sortBy]: sortDirection } },
+        { $skip: skip },
+        { $limit: Number(limit) },
+    ]);
+
+    // total count
+    const totalCountResult = await ShopModel.aggregate([
+        ...commonPipeline,
+        { $count: "totalCount" },
+    ]);
+
+    const totalCount = totalCountResult[0]?.totalCount || 0;
+    const totalPages = Math.ceil(totalCount / Number(limit));
+
+    const result = {
+        meta: {
+            page: Number(page),
+            limit: Number(limit),
+            totalPages,
+            total: totalCount,
+        },
+        data: shops,
+    };
+
+    return result;
+};
+
 /*============== get my shop ================== */
 const getMyShop = async (ownerId: string) => {
 
@@ -261,6 +348,7 @@ const updateShop = async (ownerId: string, req: any) => {
 const ShopService = {
     createShop,
     getShops,
+    getCustomerShops,
     getMyShop,
     updateShop
 }
