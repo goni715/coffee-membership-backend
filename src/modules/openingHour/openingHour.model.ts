@@ -12,6 +12,11 @@ const openingHourSchema = new Schema<IOpeningHour>(
             type: String,
             required: true
         },
+        slug: {
+            type: String,
+            required: true,
+            trim: true,
+        },
         openTime: {
             type: String,
             required: true

@@ -164,10 +164,25 @@ const getMyShop = async (ownerId: string) => {
         {
             $lookup: {
                 from: "openinghours",
-                localField: "_id",
-                foreignField: "shopId",
-                as: "openingHours"
-            }
+                let: { shopId: "$_id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$shopId", "$$shopId"] },
+                        },
+                    },
+                    {
+                        $project: {
+                            _id: 1,
+                            day: 1,
+                            openTime: 1,
+                            closeTime: 1,
+                            isClosed: 1,
+                        },
+                    },
+                ],
+                as: "openingHours",
+            },
         },
         {
             $project: {
