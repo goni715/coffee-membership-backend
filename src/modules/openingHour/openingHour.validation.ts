@@ -106,3 +106,13 @@ export const updateOpeningHourValidationSchema = z.object({
         )
 });
 
+
+
+export const deleteOpeningHourValidationSchema = z.object({
+    params: z.object({
+        openingId: z.string().refine((id) => !isNotObjectId(id), {
+            message: "openingId must be a valid ObjectId",
+        }),
+    }),
+});
+

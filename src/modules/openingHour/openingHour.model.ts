@@ -3,6 +3,11 @@ import { IOpeningHour } from "./openingHour.interface";
 
 const openingHourSchema = new Schema<IOpeningHour>(
     {
+        ownerId: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
         shopId: {
             type: Schema.Types.ObjectId,
             ref: "Shop",
