@@ -1,30 +1,11 @@
-import express, { Request, Response } from "express";
+import express from "express";
+import UserController from "./user.controller";
 
 const router = express.Router();
 
-
 router.get(
-    "/get-users",
-    (req:Request, res: Response)=> {
-        res.status(200).json({
-            success: true,
-            message: "Users retrieved successfully",
-            data: [
-                {
-                    id: 1,
-                    name: 'Osman Goni',
-                },
-                {
-                    id: 2,
-                    name: 'Evan Ahmed',
-                },
-                {
-                    id: 3,
-                    name: 'Marjan Hossain',
-                }
-            ]
-        })
-    }
+    "/customers",
+    UserController.getCustomers
 );
 
 

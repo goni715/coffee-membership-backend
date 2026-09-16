@@ -21,3 +21,15 @@ export interface IUser extends Document {
   lastLoginAt?: Date;
   tokenVersion: number;
 }
+
+
+
+export type TUserQuery = {
+  searchTerm?: string;
+  page?: string;
+  limit?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  status?: TAccountStatus;
+};
+

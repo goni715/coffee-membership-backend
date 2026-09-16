@@ -1,4 +1,4 @@
-export const USER_SEARCHABLE_FIELDS = ["fullName", "email", "address"];
+export const USER_SEARCHABLE_FIELDS = ["fullName", "email", "phone"];
 
 export const ACCOUNT_STATUSES = {
   PENDING : 'pending',
