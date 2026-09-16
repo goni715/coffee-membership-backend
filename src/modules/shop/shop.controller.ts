@@ -35,6 +35,26 @@ const getCustomerShops = asyncHandler(async (req, res) => {
     });
 });
 
+const getSingleShop = asyncHandler(async (req, res) => {
+    const { shopId } = req.params;
+    const result = await ShopService.getSingleShop(shopId as string);
+    res.status(200).json({
+        success: true,
+        message: "Shop is retrieved successfully",
+        data: result,
+    });
+});
+
+const getSingleCustomerShop = asyncHandler(async (req, res) => {
+    const { shopId } = req.params;
+    const result = await ShopService.getSingleCustomerShop(shopId as string);
+    res.status(200).json({
+        success: true,
+        message: "Shop is retrieved successfully",
+        data: result,
+    });
+});
+
 const getMyShop = asyncHandler(async (req, res) => {
     const { userId } = req.headers;
     const result = await ShopService.getMyShop(userId as string);
@@ -55,12 +75,26 @@ const updateShop = asyncHandler(async (req, res) => {
     });
 });
 
+const updateShopStatus = asyncHandler(async (req, res) => {
+    const { shopId } = req.params;
+    const { status } = req.body;
+    const result = await ShopService.updateShopStatus(shopId as string, status);
+    res.status(200).json({
+        success: true,
+        message: "Shop status is updated successfully",
+        data: result,
+    });
+});
+
 const ShopController = {
     createShop,
     getShops,
     getCustomerShops,
+    getSingleShop,
+    getSingleCustomerShop,
     getMyShop,
-    updateShop
+    updateShop,
+    updateShopStatus
 }
 
 export default ShopController

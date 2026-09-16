@@ -50,25 +50,25 @@ router.post(
 
 router.post(
   "/logout",
-  AuthMiddleware(USER_ROLES.CUSTOMER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  AuthMiddleware(USER_ROLES.CUSTOMER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.OWNER),
   validationMiddleware(refreshTokenValidationSchema),
   AuthController.logout,
 );
 router.post(
   "/logout-all",
-  AuthMiddleware(USER_ROLES.CUSTOMER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  AuthMiddleware(USER_ROLES.CUSTOMER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.OWNER),
   validationMiddleware(refreshTokenValidationSchema),
   AuthController.logoutAll,
 );
 
 router.patch(
   "/revoke-session/:sessionId",
-  AuthMiddleware(USER_ROLES.CUSTOMER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  AuthMiddleware(USER_ROLES.CUSTOMER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.OWNER),
   AuthController.revokeSession,
 );
 router.get(
   "/get-all-sessions",
-  AuthMiddleware(USER_ROLES.CUSTOMER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  AuthMiddleware(USER_ROLES.CUSTOMER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.OWNER),
   AuthController.getAllSessions,
 );
 router.post(
@@ -79,7 +79,7 @@ router.post(
 
 router.patch(
   "/change-password",
-  AuthMiddleware(USER_ROLES.CUSTOMER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  AuthMiddleware(USER_ROLES.CUSTOMER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.OWNER),
   validationMiddleware(changePasswordValidationSchema),
   AuthController.changePassword,
 );

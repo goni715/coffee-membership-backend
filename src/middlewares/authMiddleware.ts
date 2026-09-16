@@ -26,15 +26,14 @@ const authMiddleware = (...roles: TUserRole[]) =>
     }
 
     if (!token) {
-     throw new UnauthorizedError("You are not authorized.");
+      throw new UnauthorizedError("You are not authorized.");
     }
     let decoded;
 
     // verify token
     try {
       decoded = verifyToken(token, config.jwt.jwt_access_secret as Secret);
-    } catch (err) {
-      console.log(err)
+    } catch {
       throw new UnauthorizedError(
         "You are not authorized. Invalid or expired authentication token.",
       );

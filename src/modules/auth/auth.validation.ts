@@ -3,6 +3,7 @@ import { fullNameRegex } from "@/modules/user/user.validation";
 import { Types } from "mongoose";
 
 export const phoneRegex = /^\+?\d{1,14}$/;
+const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)/;
 
 export const fullNameZodSchema = z
   .string({
@@ -32,7 +33,7 @@ export const passwordZodSchema = z
   .min(6, "Password must be at least 6 characters long")
   .max(60, "Password must not exceed 60 characters")
   .regex(
-    /^(?=.*[a-zA-Z])(?=.*\d)/,
+    passwordRegex,
     "Password must contain at least one letter and one number",
   )
   .trim();
@@ -130,6 +131,7 @@ export const changePasswordValidationSchema = z.object({
         })
         .min(6, "Current password must be at least 6 characters long")
         .max(60, "Current password must not exceed 60 characters")
+        .regex(passwordRegex, "Current password must contain at least one letter and one number")
         .trim(),
       newPassword: z
         .string({
@@ -141,7 +143,7 @@ export const changePasswordValidationSchema = z.object({
         .min(6, "New password must be at least 6 characters long")
         .max(60, "New password must not exceed 60 characters")
         .regex(
-          /^(?=.*[a-zA-Z])(?=.*\d)/,
+          passwordRegex,
           "New password must contain at least one letter and one number",
         )
         .trim(),

@@ -1,6 +1,8 @@
 import z from "zod";
 import { phoneRegex } from "@/modules/auth/auth.validation";
 import isNotObjectId from "@/utils/isNotObjectId";
+import { SHOP_STATUSES } from "./shop.constant";
+import { TShopStatus } from "./shop.interface";
 
 
 export const contactNumberZodSchema = z
@@ -101,4 +103,37 @@ export const updateShopValidationSchema = z.object({
             .max(200, "Address must be at most 200 characters long")
             .optional(),
     })
+});
+
+export const updateShopStatusValidationSchema = z.object({
+    params: z.object({
+        shopId: z.string().refine((id) => !isNotObjectId(id), {
+            message: "shopId must be a valid ObjectId",
+        }),
+    }),
+    body: z.object({
+        status: z
+            .string({
+                error: (issue) =>
+                    issue.input === undefined
+                        ? "status is required"
+                        : `status must be ${Object.values(SHOP_STATUSES)
+                            .map((type) => `'${type}'`)
+                            .join(" or ")}`,
+            })
+            .refine((val) => Object.values(SHOP_STATUSES).includes(val as TShopStatus), {
+                message: `status must be ${Object.values(SHOP_STATUSES)
+                    .map((type) => `'${type}'`)
+                    .join(" or ")}`,
+            })
+    })
+});
+
+
+export const getSingleShopValidationSchema = z.object({
+    params: z.object({
+        shopId: z.string().refine((id) => !isNotObjectId(id), {
+            message: "shopId must be a valid ObjectId",
+        }),
+    }),
 });

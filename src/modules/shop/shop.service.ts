@@ -1,5 +1,5 @@
 import generateQrCode from "@/utils/generateQrCode";
-import { IShop, TShopQuery } from "./shop.interface"
+import { IShop, TShopQuery, TShopStatus } from "./shop.interface"
 import { CUSTOMER_SHOP_SEARCHABLE_FIELDS, QRCODE_PREFIX, SHOP_SEARCHABLE_FIELDS, SHOP_STATUSES } from "./shop.constant";
 import ShopModel from "./shop.model";
 import ConflictError from "@/errors/ConflictError";
@@ -11,6 +11,7 @@ import { PipelineStage, Types } from "mongoose";
 import makePublicID from "@/utils/makePublicID";
 import deleteFromCloudinary from "@/utils/deleteFromCloudinary";
 import NotFoundError from "@/errors/NotFoundError";
+import ForbiddenError from "@/errors/ForbiddenError";
 
 /*============== create shop ================== */
 const createShop = async (ownerId: string, req: any) => {
@@ -239,6 +240,141 @@ const getCustomerShops = async (query: TShopQuery) => {
     return result;
 };
 
+/*============== get single shop ================== */
+const getSingleShop = async (shopId: string) => {
+    const result = await ShopModel.aggregate([
+        {
+            $match: {
+                _id: new Types.ObjectId(shopId)
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "ownerId",
+                foreignField: "_id",
+                as: "owner"
+            }
+        },
+        {
+            $unwind: "$owner"
+        },
+        {
+            $lookup: {
+                from: "openinghours",
+                let: { shopId: "$_id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$shopId", "$$shopId"] },
+                        },
+                    },
+                    {
+                        $project: {
+                            _id: 1,
+                            day: 1,
+                            openTime: 1,
+                            closeTime: 1,
+                            isClosed: 1,
+                        },
+                    },
+                ],
+                as: "openingHours",
+            },
+        },
+        {
+            $project: {
+                _id: 1,
+                ownerName: "$owner.fullName",
+                ownerEmail: "$owner.email",
+                ownerPhone: "$owner.phone",
+                ownerImage: "$owner.profileImg",
+                name: "$name",
+                image: "$image",
+                contactNumber: "$contactNumber",
+                description: "$description",
+                address: "$address",
+                dailyBenefitDescription: "$dailyBenefitDescription",
+                qrCode: "$qrCode",
+                status: "$status",
+                totalActiveCustomers: "$totalActiveCustomers",
+                openingHours: "$openingHours",
+                createdAt: "$createdAt",
+                updatedAt: "$updatedAt",
+            }
+        }
+    ]);
+
+
+    if (result.length === 0) {
+        throw new NotFoundError("Shop not found with the provided ID.");
+    }
+
+    return result[0];
+};
+
+/*============== get single customer shop ================== */
+const getSingleCustomerShop = async (shopId: string) => {
+    const result = await ShopModel.aggregate([
+        {
+            $match: {
+                _id: new Types.ObjectId(shopId)
+            }
+        },
+        {
+            $lookup: {
+                from: "openinghours",
+                let: { shopId: "$_id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$shopId", "$$shopId"] },
+                        },
+                    },
+                    {
+                        $project: {
+                            _id: 1,
+                            day: 1,
+                            openTime: 1,
+                            closeTime: 1,
+                            isClosed: 1,
+                        },
+                    },
+                ],
+                as: "openingHours",
+            },
+        },
+        {
+            $project: {
+                _id: 1,
+                name: "$name",
+                image: "$image",
+                contactNumber: "$contactNumber",
+                description: "$description",
+                address: "$address",
+                dailyBenefitDescription: "$dailyBenefitDescription",
+                qrCode: "$qrCode",
+                status: "$status",
+                totalActiveCustomers: "$totalActiveCustomers",
+                openingHours: "$openingHours",
+                createdAt: "$createdAt",
+                updatedAt: "$updatedAt",
+            }
+        }
+    ]);
+
+
+    if (result.length === 0) {
+        throw new NotFoundError("Shop not found with the provided ID.");
+    }
+
+    if (result[0].status !== SHOP_STATUSES.ACTIVE) {
+        throw new ForbiddenError("Shop is not active.");
+    }
+
+    return result[0];
+};
+
 /*============== get my shop ================== */
 const getMyShop = async (ownerId: string) => {
 
@@ -344,13 +480,39 @@ const updateShop = async (ownerId: string, req: any) => {
     return result;
 }
 
+/*============== update shop status ================== */
+const updateShopStatus = async (shopId: string, status: TShopStatus) => {
+    //check shop
+    const shop = await ShopModel.findById(shopId);
+    if (!shop) {
+        throw new NotFoundError("Shop not found with the provided ID.");
+    }
+
+    // check if shop status is already the same
+    if (shop.status === status) {
+        throw new ConflictError(`This shop is already ${status}.`);
+    }
+
+    //update status
+    const result = await ShopModel.updateOne(
+        { _id: shop._id },
+        {
+            status
+        }
+    );
+
+    return result;
+}
 
 const ShopService = {
     createShop,
     getShops,
     getCustomerShops,
     getMyShop,
-    updateShop
+    getSingleShop,
+    getSingleCustomerShop,
+    updateShop,
+    updateShopStatus
 }
 
 export default ShopService
