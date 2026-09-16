@@ -16,11 +16,15 @@ export const createOwnerValidationSchema = z.object({
   }),
 });
 
+
+const ownerIdZodSchema = z.string().refine((id) => Types.ObjectId.isValid(id), {
+  message: "ownerId must be a valid ObjectId",
+});
+
+
 export const updateOwnerValidationSchema = z.object({
   params: z.object({
-    ownerId: z.string().refine((id) => Types.ObjectId.isValid(id), {
-      message: "ownerId must be a valid ObjectId",
-    }),
+    ownerId: ownerIdZodSchema,
   }),
   body: z
     .object({
@@ -35,8 +39,6 @@ export const updateOwnerValidationSchema = z.object({
 
 export const deleteOwnerValidationSchema = z.object({
   params: z.object({
-    ownerId: z.string().refine((id) => Types.ObjectId.isValid(id), {
-      message: "ownerId must be a valid ObjectId",
-    }),
+    ownerId: ownerIdZodSchema,
   }),
 });

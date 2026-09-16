@@ -127,7 +127,7 @@ const updateFaq = async (faqId: string, payload: Partial<IFaq>) => {
     //check faq
     const faq = await FaqModel.findById(faqId);
     if (!faq) {
-        throw new NotFoundError("FAQ not found with the provided ID");
+        throw new NotFoundError("FAQ not found with the provided ID.");
     }
 
     //check the already existed question
@@ -139,7 +139,7 @@ const updateFaq = async (faqId: string, payload: Partial<IFaq>) => {
             slug
         });
         if (faqExist) {
-            throw new ConflictError("Sorry! This Question is already existed");
+            throw new ConflictError("This question is already existed.");
         }
     }
 

@@ -5,7 +5,19 @@ import { SHOP_STATUSES } from "./shop.constant";
 import { TShopStatus } from "./shop.interface";
 
 
-export const contactNumberZodSchema = z
+const nameZodSchema = z
+    .string({
+        error: (issue) =>
+            issue.input === undefined
+                ? "name is required"
+                : "name must be a string",
+    })
+    .trim()
+    .min(2, "Name must be at least 2 characters long")
+    .max(100, "Name must be at most 100 characters long");
+
+
+const contactNumberZodSchema = z
     .string({
         error: (issue) =>
             issue.input === undefined
@@ -18,68 +30,44 @@ export const contactNumberZodSchema = z
             "Please enter a valid contact number (e.g., +1234567890 or 1234567890)",
     });
 
+const descriptionZodSchema = z
+    .string({
+        error: (issue) =>
+            issue.input === undefined
+                ? "description is required"
+                : "description must be a string",
+    })
+    .trim()
+    .min(5, "Description must be at least 5 characters long")
+    .max(500, "Description must be at most 500 characters long");
+
+const addressZodSchema = z
+    .string({
+        error: (issue) =>
+            issue.input === undefined
+                ? "address is required"
+                : "address must be a string",
+    })
+    .trim()
+    .min(3, "Address must be at least 3 characters long")
+    .max(200, "Address must be at most 200 characters long");
+
 
 export const createShopValidationSchema = z.object({
     body: z.object({
-        name: z
-            .string({
-                error: (issue) =>
-                    issue.input === undefined
-                        ? "name is required"
-                        : "name must be a string",
-            })
-            .trim()
-            .min(2, "Name must be at least 2 characters long")
-            .max(100, "Name must be at most 100 characters long"),
+        name: nameZodSchema,
         contactNumber: contactNumberZodSchema,
-        description: z
-            .string({
-                error: (issue) =>
-                    issue.input === undefined
-                        ? "description is required"
-                        : "description must be a string",
-            })
-            .trim()
-            .min(5, "Description must be at least 5 characters long")
-            .max(500, "Description must be at most 500 characters long"),
-        address: z
-            .string({
-                error: (issue) =>
-                    issue.input === undefined
-                        ? "address is required"
-                        : "address must be a string",
-            })
-            .trim()
-            .min(3, "Address must be at least 3 characters long")
-            .max(200, "Address must be at most 200 characters long"),
+        description: descriptionZodSchema,
+        address: addressZodSchema
     }),
 });
 
 export const updateShopValidationSchema = z.object({
     body: z.object({
-        name: z
-            .string({
-                error: (issue) =>
-                    issue.input === undefined
-                        ? "name is required"
-                        : "name must be a string",
-            })
-            .trim()
-            .min(2, "Name must be at least 2 characters long")
-            .max(100, "Name must be at most 100 characters long")
-            .optional(),
+        name: nameZodSchema.optional(),
         contactNumber: contactNumberZodSchema.optional(),
-        description: z
-            .string({
-                error: (issue) =>
-                    issue.input === undefined
-                        ? "description is required"
-                        : "description must be a string",
-            })
-            .trim()
-            .min(5, "Description must be at least 5 characters long")
-            .max(500, "Description must be at most 500 characters long")
-            .optional(),
+        description: descriptionZodSchema.optional(),
+        address: addressZodSchema.optional(),
         dailyBenefitDescription: z
             .string({
                 error: (issue) =>
@@ -91,25 +79,18 @@ export const updateShopValidationSchema = z.object({
             .min(5, "Daily benefit description must be at least 5 characters long")
             .max(500, "Daily benefit description must be at most 500 characters long")
             .optional(),
-        address: z
-            .string({
-                error: (issue) =>
-                    issue.input === undefined
-                        ? "address is required"
-                        : "address must be a string",
-            })
-            .trim()
-            .min(3, "Address must be at least 3 characters long")
-            .max(200, "Address must be at most 200 characters long")
-            .optional(),
     })
+});
+
+
+
+const shopIdZodSchema = z.string().refine((id) => !isNotObjectId(id), {
+    message: "shopId must be a valid ObjectId",
 });
 
 export const updateShopStatusValidationSchema = z.object({
     params: z.object({
-        shopId: z.string().refine((id) => !isNotObjectId(id), {
-            message: "shopId must be a valid ObjectId",
-        }),
+        shopId: shopIdZodSchema
     }),
     body: z.object({
         status: z
@@ -132,8 +113,6 @@ export const updateShopStatusValidationSchema = z.object({
 
 export const getSingleShopValidationSchema = z.object({
     params: z.object({
-        shopId: z.string().refine((id) => !isNotObjectId(id), {
-            message: "shopId must be a valid ObjectId",
-        }),
+        shopId: shopIdZodSchema
     }),
 });

@@ -3,7 +3,7 @@ import FaqController from './faq.controller';
 import authMiddleware from '@/middlewares/authMiddleware';
 import { USER_ROLES } from '../user/user.constant';
 import validationMiddleware from '@/middlewares/validationMiddleware';
-import { createFaqValidationSchema, updateFaqValidationSchema } from './faq.validation';
+import { createFaqValidationSchema, deleteFaqValidationSchema, updateFaqValidationSchema } from './faq.validation';
 
 const router = express.Router();
 
@@ -32,6 +32,7 @@ router.patch(
 router.delete(
     '/delete-faq/:faqId',
     authMiddleware(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    validationMiddleware(deleteFaqValidationSchema),
     FaqController.deleteFaq,
 );
 

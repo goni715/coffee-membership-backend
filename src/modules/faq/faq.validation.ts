@@ -1,6 +1,7 @@
 import z from 'zod';
 import { FAQ_CATEGORIES } from './faq.constant';
 import { TFaqCategory } from './faq.interface';
+import isNotObjectId from '@/utils/isNotObjectId';
 
 const questionRegex = /^.*\?$/
 
@@ -46,6 +47,11 @@ export const createFaqValidationSchema = z.object({
 });
 
 export const updateFaqValidationSchema = z.object({
+    params: z.object({
+        faqId: z.string().refine((id) => !isNotObjectId(id), {
+            message: "faqId must be a valid ObjectId",
+        }),
+    }),
     body: z.object({
         question: questionZodZchema.optional(),
         answer: answerZodZchema.optional(),
@@ -62,4 +68,13 @@ export const updateFaqValidationSchema = z.object({
             message: "At least one field must be provided to update",
             path: ["body"],
         })
+})
+
+
+export const deleteFaqValidationSchema = z.object({
+    params: z.object({
+        faqId: z.string().refine((id) => !isNotObjectId(id), {
+            message: "faqId must be a valid ObjectId",
+        }),
+    }),
 })
