@@ -4,6 +4,7 @@ import AuthRoutes from "@/modules/auth/auth.route";
 import OwnerRoutes from "@/modules/owner/owner.route";
 import ShopRoutes from "@/modules/shop/shop.route";
 import OpeningHourRoutes from "@/modules/openingHour/openingHour.route";
+import FaqRoutes from "@/modules/faq/faq.route";
 
 const router = express.Router();
 
@@ -27,6 +28,10 @@ const moduleRoutes = [
   {
     path: "/opening-hour",
     route: OpeningHourRoutes,
+  },
+  {
+    path: "/faq",
+    route: FaqRoutes,
   },
 ];
 

@@ -93,6 +93,9 @@ const updateOpeningHour = async (ownerId: string, openingId: string, payload: Pa
         const openingHour = await OpeningHourModel.findOne({
             ownerId,
             shopId: shop._id,
+            _id: {
+                $ne: openingId
+            },
             slug
         })
 
