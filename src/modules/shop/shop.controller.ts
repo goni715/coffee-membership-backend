@@ -46,8 +46,9 @@ const getSingleShop = asyncHandler(async (req, res) => {
 });
 
 const getSingleCustomerShop = asyncHandler(async (req, res) => {
+    const { userId } = req.headers;
     const { shopId } = req.params;
-    const result = await ShopService.getSingleCustomerShop(shopId as string);
+    const result = await ShopService.getSingleCustomerShop(userId as string, shopId as string);
     res.status(200).json({
         success: true,
         message: "Shop is retrieved successfully",

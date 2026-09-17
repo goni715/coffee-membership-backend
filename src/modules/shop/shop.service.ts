@@ -314,7 +314,7 @@ const getSingleShop = async (shopId: string) => {
 };
 
 /*============== get single customer shop ================== */
-const getSingleCustomerShop = async (shopId: string) => {
+const getSingleCustomerShop = async (customerId: string, shopId: string) => {
     const result = await ShopModel.aggregate([
         {
             $match: {
@@ -345,6 +345,37 @@ const getSingleCustomerShop = async (shopId: string) => {
             },
         },
         {
+            $lookup: {
+                from: "memberships",
+                let: { shopId: "$_id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$shopId", "$$shopId"] },
+                                    {
+                                        $eq: ["$customerId", new Types.ObjectId(customerId)]
+                                    }
+                                ]
+                            },
+                        },
+                    },
+                ],
+                as: "members",
+            },
+        },
+        {
+            $addFields: {
+                isJoin: {
+                    $gt: [{ $size: "$members" }, 0]
+                },
+                membershipStatus: {
+                    $ifNull: [{ $arrayElemAt: ["$members.status", 0] }, null]
+                }
+            }
+        },
+        {
             $project: {
                 _id: 1,
                 name: "$name",
@@ -357,6 +388,8 @@ const getSingleCustomerShop = async (shopId: string) => {
                 status: "$status",
                 totalActiveCustomers: "$totalActiveCustomers",
                 openingHours: "$openingHours",
+                isJoin: "$isJoin",
+                membershipStatus: "$membershipStatus",
                 createdAt: "$createdAt",
                 updatedAt: "$updatedAt",
             }
@@ -371,6 +404,11 @@ const getSingleCustomerShop = async (shopId: string) => {
     if (result[0].status !== SHOP_STATUSES.ACTIVE) {
         throw new ForbiddenError("Shop is not active.");
     }
+
+
+    //remove status and members field
+    result[0].status = undefined;
+    result[0].members = undefined;
 
     return result[0];
 };

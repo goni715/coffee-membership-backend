@@ -9,3 +9,12 @@ export interface IMembership extends Document {
     shopId: Types.ObjectId;
     status: TMembershipStatus;
 }
+
+export type TMembershipQuery = {
+    searchTerm?: string;
+    page?: string;
+    limit?: string;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+    status?: TMembershipStatus;
+};

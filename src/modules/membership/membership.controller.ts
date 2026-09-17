@@ -1,5 +1,7 @@
 import asyncHandler from "@/utils/asyncHandler";
 import MembershipService from "./membership.service";
+import pickValidFields from "@/utils/pickValidFields";
+import { MEMBERSHIP_VALID_FIELDS } from "./membership.constant";
 
 
 const joinShop = asyncHandler(async (req, res) => {
@@ -12,8 +14,34 @@ const joinShop = asyncHandler(async (req, res) => {
     })
 })
 
+const getMembershipRequests = asyncHandler(async (req, res) => {
+    const { userId } = req.headers;
+    const validatedQuery = pickValidFields(req.query, MEMBERSHIP_VALID_FIELDS);
+    const result = await MembershipService.getMembershipRequests(userId as string, validatedQuery);
+    res.status(200).json({
+        success: true,
+        message: "Membership requests retrieved successfully.",
+        meta: result.meta,
+        data: result.data
+    })
+})
+
+const updateMembershipStatus = asyncHandler(async (req, res) => {
+    const { userId } = req.headers;
+    const { membershipId } = req.params;
+    const { status } = req.body;
+    const result = await MembershipService.updateMembershipStatus(userId as string, membershipId as string, status);
+    res.status(200).json({
+        success: true,
+        message: "Membership status updated successfully.",
+        data: result
+    })
+})
+
 const MembershipController = {
-    joinShop
+    joinShop,
+    getMembershipRequests,
+    updateMembershipStatus
 }
 
 export default MembershipController;
