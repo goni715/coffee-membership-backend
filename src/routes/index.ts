@@ -5,6 +5,7 @@ import OwnerRoutes from "@/modules/owner/owner.route";
 import ShopRoutes from "@/modules/shop/shop.route";
 import OpeningHourRoutes from "@/modules/openingHour/openingHour.route";
 import FaqRoutes from "@/modules/faq/faq.route";
+import MembershipRoutes from "@/modules/membership/membership.route";
 
 const router = express.Router();
 
@@ -32,6 +33,10 @@ const moduleRoutes = [
   {
     path: "/faq",
     route: FaqRoutes,
+  },
+  {
+    path: "/membership",
+    route: MembershipRoutes,
   },
 ];
 

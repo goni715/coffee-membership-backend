@@ -84,9 +84,15 @@ export const updateShopValidationSchema = z.object({
 
 
 
-const shopIdZodSchema = z.string().refine((id) => !isNotObjectId(id), {
-    message: "shopId must be a valid ObjectId",
-});
+export const shopIdZodSchema = z
+    .string({
+        error: (issue) =>
+            issue.input === undefined
+                ? "shopId is required"
+                : "shopId must be a string",
+    }).refine((id) => !isNotObjectId(id), {
+        message: "shopId must be a valid ObjectId",
+    });
 
 export const updateShopStatusValidationSchema = z.object({
     params: z.object({

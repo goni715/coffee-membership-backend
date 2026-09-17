@@ -1,13 +1,7 @@
+import { MEMBERSHIP_STATUSES } from './membership.constant';
 import { IMembership } from './membership.interface';
-import { Schema } from 'mongoose';
+import { model, Schema } from 'mongoose';
 
-export enum MembershipRequestStatus {
-    PENDING = 'PENDING',
-    APPROVED = 'APPROVED',
-    REJECTED = 'REJECTED',
-    PAUSED = 'PAUSED',
-    CANCELLED = 'CANCELLED',
-}
 
 const membershipSchema = new Schema<IMembership>(
     {
@@ -15,34 +9,29 @@ const membershipSchema = new Schema<IMembership>(
             type: Schema.Types.ObjectId,
             ref: 'User',
             required: [true, 'Customer ID is required'],
-            index: true,
+        },
+        ownerId: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: [true, 'Owner ID is required'],
         },
         shopId: {
             type: Schema.Types.ObjectId,
             ref: 'Shop',
             required: [true, 'Shop ID is required'],
-            index: true,
         },
         status: {
             type: String,
-            enum: Object.values(MembershipRequestStatus),
-            default: MembershipRequestStatus.PENDING,
-            index: true,
-        },
-        requestDate: {
-            type: Date,
-            default: Date.now,
-        },
-        actionDate: {
-            type: Date,
-            default: null,
-        },
-        statusReason: {
-            type: String,
-            default: null,
+            enum: Object.values(MEMBERSHIP_STATUSES),
+            default: MEMBERSHIP_STATUSES.PENDING,
         },
     },
-    { timestamps: true, versionKey: false }
+    {
+        timestamps: true,
+        versionKey: false
+    }
 );
 
 
+const MembershipModel = model<IMembership>('Membership', membershipSchema);
+export default MembershipModel;

@@ -63,11 +63,21 @@ export const createOpeningHourValidationSchema = z.object({
         )
 })
 
+
+const openingIdZodSchema = z
+    .string({
+        error: (issue) =>
+            issue.input === undefined
+                ? "openingId is required"
+                : "openingId must be a string",
+    })
+    .refine((id) => !isNotObjectId(id), {
+        message: "openingId must be a valid ObjectId",
+    });
+
 export const updateOpeningHourValidationSchema = z.object({
     params: z.object({
-        openingId: z.string().refine((id) => !isNotObjectId(id), {
-            message: "openingId must be a valid ObjectId",
-        }),
+        openingId: openingIdZodSchema
     }),
     body: z
         .object({
@@ -110,9 +120,7 @@ export const updateOpeningHourValidationSchema = z.object({
 
 export const deleteOpeningHourValidationSchema = z.object({
     params: z.object({
-        openingId: z.string().refine((id) => !isNotObjectId(id), {
-            message: "openingId must be a valid ObjectId",
-        }),
+        openingId: openingIdZodSchema
     }),
 });
 
