@@ -6,6 +6,7 @@ import ShopRoutes from "@/modules/shop/shop.route";
 import OpeningHourRoutes from "@/modules/openingHour/openingHour.route";
 import FaqRoutes from "@/modules/faq/faq.route";
 import MembershipRoutes from "@/modules/membership/membership.route";
+import ContentRoutes from "@/modules/content/content.route";
 
 const router = express.Router();
 
@@ -37,6 +38,10 @@ const moduleRoutes = [
   {
     path: "/membership",
     route: MembershipRoutes,
+  },
+  {
+    path: "/content",
+    route: ContentRoutes,
   },
 ];
 
