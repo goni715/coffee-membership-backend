@@ -27,5 +27,11 @@ router.patch(
     MembershipController.updateMembershipStatus,
 );
 
+router.get(
+    '/my-memberships',
+    authMiddleware(USER_ROLES.CUSTOMER),
+    MembershipController.getMyMemberships,
+);
+
 const MembershipRoutes = router;
 export default MembershipRoutes;

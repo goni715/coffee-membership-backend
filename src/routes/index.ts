@@ -7,6 +7,7 @@ import OpeningHourRoutes from "@/modules/openingHour/openingHour.route";
 import FaqRoutes from "@/modules/faq/faq.route";
 import MembershipRoutes from "@/modules/membership/membership.route";
 import ContentRoutes from "@/modules/content/content.route";
+import RedemptionRoutes from "@/modules/redemption/redemption.route";
 
 const router = express.Router();
 
@@ -42,6 +43,10 @@ const moduleRoutes = [
   {
     path: "/content",
     route: ContentRoutes,
+  },
+  {
+    path: "/redemption",
+    route: RedemptionRoutes,
   },
 ];
 

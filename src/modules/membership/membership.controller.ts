@@ -38,10 +38,23 @@ const updateMembershipStatus = asyncHandler(async (req, res) => {
     })
 })
 
+const getMyMemberships = asyncHandler(async (req, res) => {
+    const { userId } = req.headers;
+    const validatedQuery = pickValidFields(req.query, MEMBERSHIP_VALID_FIELDS);
+    const result = await MembershipService.getMyMemberships(userId as string, validatedQuery);
+    res.status(200).json({
+        success: true,
+        message: "Memberships are retrieved successfully.",
+        meta: result.meta,
+        data: result.data
+    })
+})
+
 const MembershipController = {
     joinShop,
     getMembershipRequests,
-    updateMembershipStatus
+    updateMembershipStatus,
+    getMyMemberships
 }
 
 export default MembershipController;

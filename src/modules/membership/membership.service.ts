@@ -4,7 +4,7 @@ import { IMembership, TMembershipQuery, TMembershipStatus } from "./membership.i
 import MembershipModel from "./membership.model";
 import ConflictError from "@/errors/ConflictError";
 import { makeFilterQuery, makeSearchQuery } from "@/helpers/QueryBuilder";
-import { MEMBERSHIP_SEARCHABLE_FIELDS, MEMBERSHIP_STATUSES } from "./membership.constant";
+import { MEMBERSHIP_SEARCHABLE_FIELDS, MEMBERSHIP_STATUSES, MY_MEMBERSHIPS_SEARCHABLE_FIELDS } from "./membership.constant";
 import { PipelineStage, Types } from "mongoose";
 import ForbiddenError from "@/errors/ForbiddenError";
 
@@ -173,11 +173,110 @@ const updateMembershipStatus = async (ownerId: string, membershipId: string, sta
     return result;
 }
 
+/*=============== get customer memberships ===============*/
+const getMyMemberships = async (customerId: string, query: TMembershipQuery) => {
+    //destructuring
+    const {
+        searchTerm,
+        page = 1,
+        limit = 10,
+        sortOrder = "desc",
+        sortBy = "createdAt",
+        ...filters // additional filters
+    } = query;
+
+    // set up pagination
+    const skip = (Number(page) - 1) * Number(limit);
+
+    // setup sorting
+    const sortDirection = sortOrder === "asc" ? 1 : -1;
+
+    // setup searching
+    let searchQuery = {};
+    if (searchTerm) {
+        searchQuery = makeSearchQuery(searchTerm, MY_MEMBERSHIPS_SEARCHABLE_FIELDS);
+    }
+
+    // setup filters
+    let filterQuery = {};
+    if (filters) {
+        filterQuery = makeFilterQuery(filters);
+    }
+
+    //common pipeline stage
+    const commonPipeline: PipelineStage[] = [
+        {
+            $match: {
+                customerId: new Types.ObjectId(customerId)
+            }
+        },
+        {
+            $lookup: {
+                from: "shops",
+                localField: "shopId",
+                foreignField: "_id",
+                as: "shop",
+            }
+        },
+        {
+            $unwind: "$shop"
+        },
+        {
+            $project: {
+                _id: 1,
+                shopId: 1,
+                shopName: "$shop.name",
+                contactNumber: "$shop.contactNumber",
+                address: "$shop.address",
+                image: "$shop.image",
+                status: "$status",
+                createdAt: "$createdAt",
+                updatedAt: "$updatedAt",
+            },
+        },
+        {
+            $match: {
+                ...searchQuery,
+                ...filterQuery,
+            },
+        }
+    ]
+
+    const memberships = await MembershipModel.aggregate([
+        ...commonPipeline,
+        { $sort: { [sortBy]: sortDirection } },
+        { $skip: skip },
+        { $limit: Number(limit) },
+    ]);
+
+    // total count
+    const totalCountResult = await MembershipModel.aggregate([
+        ...commonPipeline,
+        { $count: "totalCount" },
+    ]);
+
+    const totalCount = totalCountResult[0]?.totalCount || 0;
+    const totalPages = Math.ceil(totalCount / Number(limit));
+
+    const result = {
+        meta: {
+            page: Number(page),
+            limit: Number(limit),
+            totalPages,
+            total: totalCount,
+        },
+        data: memberships,
+    };
+
+    return result;
+}
+
 
 const MembershipService = {
     joinShop,
     getMembershipRequests,
-    updateMembershipStatus
+    updateMembershipStatus,
+    getMyMemberships
 }
 
 export default MembershipService

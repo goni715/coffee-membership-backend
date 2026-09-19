@@ -2,7 +2,6 @@ import { Schema, model, Document } from 'mongoose';
 import { IRedemption } from './redemption.interface';
 
 
-
 const redemptionSchema = new Schema<IRedemption>(
   {
     customerId: {
@@ -10,6 +9,11 @@ const redemptionSchema = new Schema<IRedemption>(
       ref: 'User',
       required: [true, 'Customer ID is required'],
       index: true,
+    },
+    ownerId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'Owner ID is required'],
     },
     shopId: {
       type: Schema.Types.ObjectId,
@@ -27,9 +31,17 @@ const redemptionSchema = new Schema<IRedemption>(
       type: Boolean,
       default: false,
     },
+    expiresAt: {
+      type: Date,
+      required: true,
+    },
   },
-  { timestamps: true, versionKey: false }
+  {
+    timestamps: true,
+    versionKey: false
+  }
 );
 
 
-export const RedemptionToken = model<IRedemption>('Redemption', redemptionSchema);
+const RedemptionModel = model<IRedemption>('Redemption', redemptionSchema);
+export default RedemptionModel;

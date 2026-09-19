@@ -13,6 +13,12 @@ export const MEMBERSHIP_SEARCHABLE_FIELDS = [
     "customerPhone"
 ];
 
+export const MY_MEMBERSHIPS_SEARCHABLE_FIELDS = [
+    "shopName",
+    "contactNumber",
+    "address"
+];
+
 export const MEMBERSHIP_VALID_FIELDS: string[] = [
     "searchTerm",
     "page",
