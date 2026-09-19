@@ -7,7 +7,7 @@ const createUpdateContent = async (payload: IContent) => {
         { type: payload.type },
         { content: payload.content },
         { new: true, upsert: true, runValidators: true }
-    ).select("-_id -createdAt");
+    ).select("-_id");
     return result;
 };
 
