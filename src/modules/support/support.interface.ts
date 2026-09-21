@@ -19,4 +19,5 @@ export type TSupportQuery = {
     sortBy?: string;
     sortOrder?: "asc" | "desc";
     status?: string,
+    date?: string
 };

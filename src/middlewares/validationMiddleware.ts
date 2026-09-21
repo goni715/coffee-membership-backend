@@ -19,7 +19,7 @@ const validationMiddleware = (schema: ZodType<any, any, any>) => {
       // assign parsed data
       if (parsedData.body) req.body = parsedData.body;
       if (parsedData.params) req.params = parsedData.params;
-      if (parsedData.query) req.query = parsedData.query;
+      if (parsedData.query) (req as any).validatedQuery = parsedData.query;
 
       next();
     } catch (error) {

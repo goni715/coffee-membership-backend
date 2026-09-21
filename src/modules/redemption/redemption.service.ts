@@ -10,7 +10,7 @@ import ForbiddenError from "@/errors/ForbiddenError";
 import { TRedemptionQuery } from "./redemption.interface";
 import { makeFilterQuery, makeSearchQuery } from "@/helpers/QueryBuilder";
 import { PipelineStage, Types } from "mongoose";
-import { REDEMPTION_SEARCHABLE_FIELDS } from "./redemption.constant";
+import { CUSTOMER_REDEMPTION_SEARCHABLE_FIELDS, OWNER_REDEMPTION_SEARCHABLE_FIELDS } from "./redemption.constant";
 
 /*============== generate redemption qr code =================*/
 const generateRedemptionQrCode = async (customerId: string, shopId: string) => {
@@ -99,7 +99,7 @@ const getOwnerRedemptions = async (ownerId: string, query: TRedemptionQuery) => 
     // setup searching
     let searchQuery = {};
     if (searchTerm) {
-        searchQuery = makeSearchQuery(searchTerm, REDEMPTION_SEARCHABLE_FIELDS);
+        searchQuery = makeSearchQuery(searchTerm, OWNER_REDEMPTION_SEARCHABLE_FIELDS);
     }
 
     // setup filters
@@ -134,6 +134,105 @@ const getOwnerRedemptions = async (ownerId: string, query: TRedemptionQuery) => 
                 customerEmail: "$customer.email",
                 customerPhone: "$customer.phone",
                 customerImg: "$customer.profileImg",
+                qrCode: "$qrCode",
+                isUsed: "$isUsed",
+                expiresAt: "$expiresAt",
+                createdAt: "$createdAt",
+                updatedAt: "$updatedAt",
+            },
+        },
+        {
+            $match: {
+                ...searchQuery,
+                ...filterQuery,
+            },
+        }
+    ]
+
+    const memberships = await RedemptionModel.aggregate([
+        ...commonPipeline,
+        { $sort: { [sortBy]: sortDirection } },
+        { $skip: skip },
+        { $limit: Number(limit) },
+    ]);
+
+    // total count
+    const totalCountResult = await RedemptionModel.aggregate([
+        ...commonPipeline,
+        { $count: "totalCount" },
+    ]);
+
+    const totalCount = totalCountResult[0]?.totalCount || 0;
+    const totalPages = Math.ceil(totalCount / Number(limit));
+
+    const result = {
+        meta: {
+            page: Number(page),
+            limit: Number(limit),
+            totalPages,
+            total: totalCount,
+        },
+        data: memberships,
+    };
+
+    return result;
+}
+
+/*=============== get customer redemptions ===============*/
+const getCustomerRedemptions = async (customerId: string, query: TRedemptionQuery) => {
+    //destructuring
+    const {
+        searchTerm,
+        page = 1,
+        limit = 10,
+        sortOrder = "desc",
+        sortBy = "createdAt",
+        ...filters // additional filters
+    } = query;
+
+    // set up pagination
+    const skip = (Number(page) - 1) * Number(limit);
+
+    // setup sorting
+    const sortDirection = sortOrder === "asc" ? 1 : -1;
+
+    // setup searching
+    let searchQuery = {};
+    if (searchTerm) {
+        searchQuery = makeSearchQuery(searchTerm, CUSTOMER_REDEMPTION_SEARCHABLE_FIELDS);
+    }
+
+    // setup filters
+    let filterQuery = {};
+    if (filters) {
+        filterQuery = makeFilterQuery(filters);
+    }
+
+    //common pipeline stage
+    const commonPipeline: PipelineStage[] = [
+        {
+            $match: {
+                customerId: new Types.ObjectId(customerId)
+            }
+        },
+        {
+            $lookup: {
+                from: "shops",
+                localField: "shopId",
+                foreignField: "_id",
+                as: "shop",
+            }
+        },
+        {
+            $unwind: "$shop"
+        },
+        {
+            $project: {
+                _id: 1,
+                shopName: "$shop.name",
+                contactNumber: "$shop.contactNumber",
+                address: "$shop.address",
+                image: "$shop.image",
                 qrCode: "$qrCode",
                 isUsed: "$isUsed",
                 expiresAt: "$expiresAt",
@@ -214,6 +313,7 @@ const verifyQrCode = async (ownerId: string, qrCode: string) => {
 const RedemptionService = {
     generateRedemptionQrCode,
     getOwnerRedemptions,
+    getCustomerRedemptions,
     verifyQrCode
 }
 

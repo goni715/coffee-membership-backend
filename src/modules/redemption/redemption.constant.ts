@@ -1,8 +1,14 @@
 
-export const REDEMPTION_SEARCHABLE_FIELDS = [
+export const OWNER_REDEMPTION_SEARCHABLE_FIELDS = [
     "customerName",
     "customerEmail",
     "customerPhone"
+];
+
+export const CUSTOMER_REDEMPTION_SEARCHABLE_FIELDS = [
+    "shopName",
+    "contactNumber",
+    "address"
 ];
 
 export const REDEMPTION_VALID_FIELDS: string[] = [

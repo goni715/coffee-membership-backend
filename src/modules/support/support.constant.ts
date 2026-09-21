@@ -4,7 +4,7 @@ export const SUPPORT_STATUSES = {
     CLOSED: "closed",
 } as const;
 
-export const SUPPORT_SEARCHABLE_FIELDS = ["fullName", "email", "subject"];
+export const SUPPORT_SEARCHABLE_FIELDS = ["fullName", "email", "phone", "title"];
 
 export const SUPPORT_VALID_FIELDS: string[] = [
     "searchTerm",
@@ -13,4 +13,5 @@ export const SUPPORT_VALID_FIELDS: string[] = [
     "sortBy",
     "sortOrder",
     "status",
+    "date"
 ];

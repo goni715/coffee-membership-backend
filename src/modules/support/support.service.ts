@@ -4,6 +4,7 @@ import SupportModel from "./support.model";
 import { SUPPORT_SEARCHABLE_FIELDS, SUPPORT_STATUSES } from "./support.constant";
 import ConflictError from "@/errors/ConflictError";
 import NotFoundError from "@/errors/NotFoundError";
+import { PipelineStage } from "mongoose";
 
 
 /* ==================== Create Support ==================== */
@@ -16,7 +17,6 @@ const submitSupportRequest = async (userId: string, payload: ISupport) => {
     return result;
 };
 
-
 /* ==================== Get Supports ==================== */
 const getSupports = async (query: TSupportQuery) => {
     const {
@@ -25,6 +25,7 @@ const getSupports = async (query: TSupportQuery) => {
         limit = 10,
         sortOrder = "desc",
         sortBy = "createdAt",
+        date,
         ...filters  // Any additional filters
     } = query;
 
@@ -45,18 +46,54 @@ const getSupports = async (query: TSupportQuery) => {
     if (filters) {
         filterQuery = makeFilterQuery(filters);
     }
-    const result = await SupportModel.aggregate([
+
+    //date is available
+    if (date) {
+        const start = `${date}T00:00:00.000+00:00`;
+        const end = `${date}T23:59:59.999+00:00`;
+        filterQuery = {
+            ...filterQuery,
+            createdAt: { $gte: new Date(start), $lte: new Date(end) },
+        };
+    }
+
+    //common pipeline stage
+    const commonPipeline: PipelineStage[] = [
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'userId',
+                foreignField: '_id',
+                as: 'user'
+            }
+        },
+        { $unwind: '$user' },
+        {
+            $project: {
+                _id: 1,
+                fullName: "$user.fullName",
+                email: "$user.email",
+                phone: "$user.phone",
+                title: "$title",
+                message: "$message",
+                replyMessage: "$replyMessage",
+                replyAt: "$replyAt",
+                status: "$status",
+                createdAt: "$createdAt",
+                updatedAt: "$updatedAt",
+            }
+        },
         {
             $match: {
                 ...searchQuery,
                 ...filterQuery
-            },
-        },
-        {
-            $project: {
-                updatedAt: 0
-            },
-        },
+            }
+        }
+    ]
+
+
+    const result = await SupportModel.aggregate([
+        ...commonPipeline,
         { $sort: { [sortBy]: sortDirection } },
         { $skip: skip },
         { $limit: Number(limit) },
@@ -64,12 +101,7 @@ const getSupports = async (query: TSupportQuery) => {
 
     // total count
     const totalCountResult = await SupportModel.aggregate([
-        {
-            $match: {
-                ...searchQuery,
-                ...filterQuery
-            }
-        },
+        ...commonPipeline,
         { $count: "totalCount" }
     ])
 

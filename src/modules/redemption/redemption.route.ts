@@ -20,6 +20,12 @@ router.get(
     RedemptionController.getOwnerRedemptions,
 );
 
+router.get(
+    '/customer-redemptions',
+    authMiddleware(USER_ROLES.CUSTOMER),
+    RedemptionController.getCustomerRedemptions,
+);
+
 router.post(
     '/verify-qr-code',
     authMiddleware(USER_ROLES.OWNER),
