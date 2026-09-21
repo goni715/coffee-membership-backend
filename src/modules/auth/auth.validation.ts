@@ -1,7 +1,8 @@
 import z from "zod";
-import { fullNameRegex } from "@/modules/user/user.validation";
 import { Types } from "mongoose";
 
+
+export const fullNameRegex = /^[A-Za-z\s'.-]+$/;
 export const phoneRegex = /^\+?\d{1,14}$/;
 const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)/;
 

@@ -15,7 +15,7 @@ const getCustomers = asyncHandler(async (req, res) => {
     });
 });
 
-const getProfile = asyncHandler(async (req, res) => {
+const getMyProfile = asyncHandler(async (req, res) => {
     const { userId } = req.headers;
     const result = await UserService.getMyProfile(userId as string);
     res.status(200).json({
@@ -25,9 +25,20 @@ const getProfile = asyncHandler(async (req, res) => {
     });
 });
 
+const updateProfile = asyncHandler(async (req, res) => {
+    const { userId } = req.headers;
+    const result = await UserService.updateProfile(userId as string, req);
+    res.status(200).json({
+        success: true,
+        message: "Profile is updated successfully",
+        data: result,
+    });
+})
+
 const UserController = {
     getCustomers,
-    getProfile
+    getMyProfile,
+    updateProfile,
 }
 
 export default UserController

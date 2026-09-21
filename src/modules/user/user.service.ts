@@ -1,8 +1,9 @@
 import { makeFilterQuery, makeSearchQuery } from "@/helpers/QueryBuilder";
-import { TUserQuery } from "./user.interface";
+import { IUser, TUserQuery } from "./user.interface";
 import { USER_ROLES, USER_SEARCHABLE_FIELDS } from "./user.constant";
 import { PipelineStage } from "mongoose";
 import UserModel from "./user.model";
+import uploadToCloudinary from "@/utils/uploadToCloudinary";
 
 
 
@@ -87,13 +88,37 @@ const getCustomers = async (query: TUserQuery) => {
     return result;
 };
 
+
+/*============== get user profile ================== */
 const getMyProfile = async (userId: string) => {
-    return "get my profile service";
+    const user = await UserModel.findById(userId).select("fullName email phone profileImg status blockedAt lastLoginAt createdAt");
+    return user;
+}
+
+/*============== update profile ================== */
+const updateProfile = async (userId: string, req: any) => {
+    const payload: Partial<IUser> = req.body;
+
+    // if image is available
+    if (req.file) {
+        //upload image
+        const image = await uploadToCloudinary(req?.file?.path as string, "user");
+        payload.profileImg = image.img_url;
+    }
+
+    //update profile
+    const result = await UserModel.updateOne(
+        { _id: userId },
+        payload,
+    );
+
+    return result;
 }
 
 const UserService = {
     getCustomers,
-    getMyProfile
+    getMyProfile,
+    updateProfile,
 }
 
 export default UserService
