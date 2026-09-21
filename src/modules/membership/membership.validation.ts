@@ -2,7 +2,6 @@
 import z from "zod";
 import { shopIdZodSchema } from "../shop/shop.validation";
 import isNotObjectId from "@/utils/isNotObjectId";
-import { MEMBERSHIP_STATUSES } from "./membership.constant";
 import { TMembershipStatus } from "./membership.interface";
 
 

@@ -1,4 +1,5 @@
 import { Types } from "mongoose";
+import { TIMEFRAME } from "./redemption.constant";
 
 export interface IRedemption extends Document {
   customerId: Types.ObjectId;
@@ -9,6 +10,7 @@ export interface IRedemption extends Document {
   expiresAt: Date;
 }
 
+export type TTimeFrame = typeof TIMEFRAME[keyof typeof TIMEFRAME];
 
 export type TRedemptionQuery = {
   searchTerm?: string;
@@ -17,4 +19,6 @@ export type TRedemptionQuery = {
   sortBy?: string;
   sortOrder?: "asc" | "desc";
   isUsed?: 'true' | 'false';
+  date?: string;
+  timeframe?: TTimeFrame;
 };

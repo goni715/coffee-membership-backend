@@ -19,3 +19,11 @@ export const REDEMPTION_VALID_FIELDS: string[] = [
     "sortOrder",
     "isUsed",
 ];
+
+export const TIMEFRAME = {
+    TODAY: 'today',
+    LAST_WEEK: 'last_week',
+    LAST_MONTH: 'last_month',
+} as const;
+
+export const TIMEFRAME_VALUES = Object.values(TIMEFRAME);

@@ -1,5 +1,9 @@
 import z from "zod";
 import { shopIdZodSchema } from "../shop/shop.validation";
+import { TIMEFRAME_VALUES } from "./redemption.constant";
+import { dateZodSchema } from "../support/support.validation";
+import { booleanQuerySchema } from "@/schemas/global.schema";
+import { enumSchema } from "@/schemas/enum.schema";
 
 export const qrCodeRegex = /^HH-COFFEE-[0-9A-Fa-f]{6}$/;
 
@@ -24,5 +28,20 @@ export const generateQrCodeValidationSchema = z.object({
 export const verifyQrCodeValidationSchema = z.object({
     body: z.object({
         qrCode: qrCodeZodSchema
+    })
+});
+
+export const getRedemptionsValidationSchema = z.object({
+    query: z.object({
+        searchTerm: z.string().optional(),
+        page: z.string().optional(),
+        limit: z.string().optional(),
+        sortOrder: z.string().optional(),
+        sortBy: z.string().optional(),
+        isUsed: booleanQuerySchema("isUsed")
+            .optional(),
+        timeframe: enumSchema("timeframe", TIMEFRAME_VALUES)
+            .optional(),
+        date: dateZodSchema.optional(),
     })
 });

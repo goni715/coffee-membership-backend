@@ -1,7 +1,5 @@
 import asyncHandler from "@/utils/asyncHandler";
 import RedemptionService from "./redemption.service";
-import pickValidFields from "@/utils/pickValidFields";
-import { REDEMPTION_VALID_FIELDS } from "./redemption.constant";
 
 
 const generateRedemptionQrCode = asyncHandler(async (req, res) => {
@@ -18,8 +16,9 @@ const generateRedemptionQrCode = asyncHandler(async (req, res) => {
 
 const getOwnerRedemptions = asyncHandler(async (req, res) => {
     const { userId } = req.headers;
-    const validatedQuery = pickValidFields(req.query, REDEMPTION_VALID_FIELDS);
+    const validatedQuery = (req as any).validatedQuery;
     const result = await RedemptionService.getOwnerRedemptions(userId as string, validatedQuery);
+    
     res.status(200).json({
         success: true,
         message: "Redemptions are retrieved successfully.",
@@ -30,8 +29,9 @@ const getOwnerRedemptions = asyncHandler(async (req, res) => {
 
 const getCustomerRedemptions = asyncHandler(async (req, res) => {
     const { userId } = req.headers;
-    const validatedQuery = pickValidFields(req.query, REDEMPTION_VALID_FIELDS);
+    const validatedQuery = (req as any).validatedQuery;
     const result = await RedemptionService.getCustomerRedemptions(userId as string, validatedQuery);
+
     res.status(200).json({
         success: true,
         message: "Redemptions are retrieved successfully.",

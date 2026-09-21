@@ -187,6 +187,8 @@ const getCustomerRedemptions = async (customerId: string, query: TRedemptionQuer
         limit = 10,
         sortOrder = "desc",
         sortBy = "createdAt",
+        date,
+        timeframe,
         ...filters // additional filters
     } = query;
 
@@ -206,6 +208,50 @@ const getCustomerRedemptions = async (customerId: string, query: TRedemptionQuer
     let filterQuery = {};
     if (filters) {
         filterQuery = makeFilterQuery(filters);
+    }
+
+    //date is available
+    if (date) {
+        const start = `${date}T00:00:00.000+00:00`;
+        const end = `${date}T23:59:59.999+00:00`;
+        filterQuery = {
+            ...filterQuery,
+            createdAt: { $gte: new Date(start), $lte: new Date(end) },
+        };
+    }
+
+    //timeframe is available
+    if (timeframe) {
+        const now = new Date();
+
+        if (timeframe === "today") {
+            const todayStr = now.toISOString().split("T")[0];
+            const start = `${todayStr}T00:00:00.000+00:00`;
+            const end = `${todayStr}T23:59:59.999+00:00`;
+
+            filterQuery = {
+                ...filterQuery,
+                createdAt: { $gte: new Date(start), $lte: new Date(end) },
+            };
+        } else if (timeframe === "last_week") {
+            const lastWeek = new Date(now);
+            lastWeek.setDate(now.getDate() - 7);
+            lastWeek.setHours(0, 0, 0, 0);
+
+            filterQuery = {
+                ...filterQuery,
+                createdAt: { $gte: lastWeek },
+            };
+        } else if (timeframe === "last_month") {
+            const lastMonth = new Date(now);
+            lastMonth.setMonth(now.getMonth() - 1);
+            lastMonth.setHours(0, 0, 0, 0);
+
+            filterQuery = {
+                ...filterQuery,
+                createdAt: { $gte: lastMonth },
+            };
+        }
     }
 
     //common pipeline stage
@@ -229,6 +275,7 @@ const getCustomerRedemptions = async (customerId: string, query: TRedemptionQuer
         {
             $project: {
                 _id: 1,
+                shopId: 1,
                 shopName: "$shop.name",
                 contactNumber: "$shop.contactNumber",
                 address: "$shop.address",
