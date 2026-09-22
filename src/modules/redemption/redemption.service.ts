@@ -374,7 +374,6 @@ const getCustomerRedemptions = async (customerId: string, query: TRedemptionQuer
 
 /*============== verify redemption qr code =================*/
 const verifyQrCode = async (ownerId: string, qrCode: string) => {
-
     //check redemption
     const redemption = await RedemptionModel.findOne({
         qrCode

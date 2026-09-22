@@ -26,6 +26,18 @@ const getMembershipRequests = asyncHandler(async (req, res) => {
     })
 })
 
+const getSingleRequest = asyncHandler(async (req, res) => {
+    const { userId } = req.headers;
+    const { membershipId } = req.params;
+    const result = await MembershipService.getSingleRequest(userId as string, membershipId as string);
+    res.status(200).json({
+        success: true,
+        message: "Membership request retrieved successfully.",
+        data: result
+    })
+})
+
+
 const updateMembershipStatus = asyncHandler(async (req, res) => {
     const { userId } = req.headers;
     const { membershipId } = req.params;
@@ -50,11 +62,25 @@ const getMyMemberships = asyncHandler(async (req, res) => {
     })
 })
 
+const getSingleMembershipByShopId = asyncHandler(async (req, res) => {
+    const { userId } = req.headers;
+    const { shopId } = req.params;
+    const result = await MembershipService.getSingleMembershipByShopId(userId as string, shopId as string);
+
+    res.status(200).json({
+        success: true,
+        message: "Membership retrieved successfully.",
+        data: result
+    })
+})
+
 const MembershipController = {
     joinShop,
     getMembershipRequests,
+    getSingleRequest,
     updateMembershipStatus,
-    getMyMemberships
+    getMyMemberships,
+    getSingleMembershipByShopId
 }
 
 export default MembershipController;

@@ -7,6 +7,12 @@ export const MEMBERSHIP_STATUSES = {
     PAUSED: 'paused',
 } as const;
 
+export const MEMBERSHIP_UPDATE_STATUSES = [
+    'active',
+    'rejected',
+    'paused',
+];
+
 export const MEMBERSHIP_SEARCHABLE_FIELDS = [
     "customerName",
     "customerEmail",

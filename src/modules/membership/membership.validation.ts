@@ -2,7 +2,8 @@
 import z from "zod";
 import { shopIdZodSchema } from "../shop/shop.validation";
 import isNotObjectId from "@/utils/isNotObjectId";
-import { TMembershipStatus } from "./membership.interface";
+import { enumSchema } from "@/schemas/enum.schema";
+import { MEMBERSHIP_UPDATE_STATUSES } from "./membership.constant";
 
 
 export const joinShopValidationSchema = z.object({
@@ -27,19 +28,20 @@ export const updateMembershipStatusValidationSchema = z.object({
         membershipId: membershipIdZodSchema
     }),
     body: z.object({
-        status: z
-            .string({
-                error: (issue) =>
-                    issue.input === undefined
-                        ? "status is required"
-                        : `status must be ${['active', 'rejected', 'paused']
-                            .map((type) => `'${type}'`)
-                            .join(" or ")}`,
-            })
-            .refine((val) => ['active', 'rejected', 'paused'].includes(val as TMembershipStatus), {
-                message: `status must be ${['active', 'rejected', 'paused']
-                    .map((type) => `'${type}'`)
-                    .join(" or ")}`,
-            })
+        status: enumSchema('status', MEMBERSHIP_UPDATE_STATUSES)
     })
 });
+
+export const getSingleRequestValidationSchema = z.object({
+    params: z.object({
+        membershipId: membershipIdZodSchema
+    }),
+});
+
+export const getSingleMembershipByShopIdValidationSchema = z.object({
+    params: z.object({
+        shopId: shopIdZodSchema
+    }),
+});
+
+

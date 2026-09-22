@@ -134,6 +134,49 @@ const getMembershipRequests = async (ownerId: string, query: TMembershipQuery) =
     return result;
 }
 
+/*=============== get single request ===============*/
+const getSingleRequest = async (ownerId: string, membershipId: string) => {
+    const result = await MembershipModel.aggregate([
+        {
+            $match: {
+                _id: new Types.ObjectId(membershipId),
+                ownerId: new Types.ObjectId(ownerId)
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "customerId",
+                foreignField: "_id",
+                as: "customer",
+            }
+        },
+        {
+            $unwind: "$customer"
+        },
+        {
+            $project: {
+                _id: 1,
+                customerId: 1,
+                customerName: "$customer.fullName",
+                customerEmail: "$customer.email",
+                customerPhone: "$customer.phone",
+                customerImg: "$customer.profileImg",
+                status: "$status",
+                createdAt: "$createdAt",
+                updatedAt: "$updatedAt",
+            },
+        }
+    ]);
+
+
+    if (result.length === 0) {
+        throw new NotFoundError("Membership not found with the provided ID.");
+    }
+
+    return result[0];
+}
+
 /*============== update membership status =================*/
 const updateMembershipStatus = async (ownerId: string, membershipId: string, status: TMembershipStatus) => {
     //check membership
@@ -271,12 +314,56 @@ const getMyMemberships = async (customerId: string, query: TMembershipQuery) => 
     return result;
 }
 
+/*========== get single membership by shop id ==========*/
+const getSingleMembershipByShopId = async (customerId: string, shopId: string) => {
+    const result = await MembershipModel.aggregate([
+        {
+            $match: {
+                customerId: new Types.ObjectId(customerId),
+                shopId: new Types.ObjectId(shopId),
+            }
+        },
+        {
+            $lookup: {
+                from: "shops",
+                localField: "shopId",
+                foreignField: "_id",
+                as: "shop",
+            }
+        },
+        {
+            $unwind: "$shop"
+        },
+        {
+            $project: {
+                _id: 1,
+                shopId: 1,
+                shopName: "$shop.name",
+                contactNumber: "$shop.contactNumber",
+                address: "$shop.address",
+                image: "$shop.image",
+                status: "$status",
+                createdAt: "$createdAt",
+                updatedAt: "$updatedAt",
+            },
+        },
+    ]);
+
+    if (result.length === 0) {
+        throw new NotFoundError("Membership not found with the provided ID.");
+    }
+
+    return result[0];
+}
+
 
 const MembershipService = {
     joinShop,
     getMembershipRequests,
+    getSingleRequest,
     updateMembershipStatus,
-    getMyMemberships
+    getMyMemberships,
+    getSingleMembershipByShopId
 }
 
 export default MembershipService
