@@ -7,6 +7,19 @@ import { MEMBERSHIP_VALID_FIELDS } from "./membership.constant";
 const joinShop = asyncHandler(async (req, res) => {
     const { userId } = req.headers;
     const result = await MembershipService.joinShop(userId as string, req.body);
+
+    res.status(200).json({
+        success: true,
+        message: "Join request sent successfully.",
+        data: result
+    })
+})
+
+const joinShopWithQrCode = asyncHandler(async (req, res) => {
+    const { userId } = req.headers;
+    const { qrCode } = req.body;
+    const result = await MembershipService.joinShopWithQrCode(userId as string, qrCode);
+
     res.status(200).json({
         success: true,
         message: "Join request sent successfully.",
@@ -18,6 +31,7 @@ const getMembershipRequests = asyncHandler(async (req, res) => {
     const { userId } = req.headers;
     const validatedQuery = pickValidFields(req.query, MEMBERSHIP_VALID_FIELDS);
     const result = await MembershipService.getMembershipRequests(userId as string, validatedQuery);
+    
     res.status(200).json({
         success: true,
         message: "Membership requests retrieved successfully.",
@@ -30,6 +44,7 @@ const getSingleRequest = asyncHandler(async (req, res) => {
     const { userId } = req.headers;
     const { membershipId } = req.params;
     const result = await MembershipService.getSingleRequest(userId as string, membershipId as string);
+
     res.status(200).json({
         success: true,
         message: "Membership request retrieved successfully.",
@@ -43,6 +58,7 @@ const updateMembershipStatus = asyncHandler(async (req, res) => {
     const { membershipId } = req.params;
     const { status } = req.body;
     const result = await MembershipService.updateMembershipStatus(userId as string, membershipId as string, status);
+
     res.status(200).json({
         success: true,
         message: "Membership status updated successfully.",
@@ -54,6 +70,7 @@ const getMyMemberships = asyncHandler(async (req, res) => {
     const { userId } = req.headers;
     const validatedQuery = pickValidFields(req.query, MEMBERSHIP_VALID_FIELDS);
     const result = await MembershipService.getMyMemberships(userId as string, validatedQuery);
+
     res.status(200).json({
         success: true,
         message: "Memberships are retrieved successfully.",
@@ -76,6 +93,7 @@ const getSingleMembershipByShopId = asyncHandler(async (req, res) => {
 
 const MembershipController = {
     joinShop,
+    joinShopWithQrCode,
     getMembershipRequests,
     getSingleRequest,
     updateMembershipStatus,

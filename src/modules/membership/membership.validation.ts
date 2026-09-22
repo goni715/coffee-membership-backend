@@ -5,6 +5,7 @@ import isNotObjectId from "@/utils/isNotObjectId";
 import { enumSchema } from "@/schemas/enum.schema";
 import { MEMBERSHIP_UPDATE_STATUSES } from "./membership.constant";
 
+export const shopQrCodeRegex = /^HH-SHOP-[0-9A-Fa-f]{6}$/;
 
 export const joinShopValidationSchema = z.object({
     body: z.object({
@@ -44,4 +45,23 @@ export const getSingleMembershipByShopIdValidationSchema = z.object({
     }),
 });
 
+
+export const qrCodeZodSchema = z
+    .string({
+        error: (issue) =>
+            issue.input === undefined
+                ? "QR code is required"
+                : "QR code must be a string",
+    })
+    .trim()
+    .regex(shopQrCodeRegex, {
+        message: "Invalid QR code format. Expected format: HH-SHOP-XXXXXX",
+    });
+
+
+export const joinShopWithQrCodeValidationSchema = z.object({
+    body: z.object({
+        qrCode: qrCodeZodSchema
+    })
+})
 

@@ -36,6 +36,35 @@ const joinShop = async (customerId: string, payload: IMembership) => {
     return result;
 }
 
+/*=============== join shop ===============*/
+const joinShopWithQrCode = async (customerId: string, qrCode: string) => {
+    //check shop
+    const shop = await ShopModel.findOne({
+        qrCode
+    });
+    if (!shop) {
+        throw new NotFoundError("Shop not found with the provided QR Code.");
+    }
+
+    //check already join
+    const alreadyJoin = await MembershipModel.findOne({
+        customerId,
+        shopId: shop._id
+    });
+    if (alreadyJoin) {
+        throw new ConflictError("You have already joined this shop.");
+    }
+
+    //create membership
+    const result = await MembershipModel.create({
+        customerId,
+        ownerId: shop.ownerId,
+        shopId: shop._id
+    });
+
+    return result;
+}
+
 /*=============== get membership requests ===============*/
 const getMembershipRequests = async (ownerId: string, query: TMembershipQuery) => {
     //destructuring
@@ -359,6 +388,7 @@ const getSingleMembershipByShopId = async (customerId: string, shopId: string) =
 
 const MembershipService = {
     joinShop,
+    joinShopWithQrCode,
     getMembershipRequests,
     getSingleRequest,
     updateMembershipStatus,
