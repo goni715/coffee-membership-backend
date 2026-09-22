@@ -9,6 +9,7 @@ import MembershipRoutes from "@/modules/membership/membership.route";
 import ContentRoutes from "@/modules/content/content.route";
 import RedemptionRoutes from "@/modules/redemption/redemption.route";
 import SupportRoutes from "@/modules/support/support.route";
+import DashboardRoutes from "@/modules/dashboard/dashboard.route";
 
 const router = express.Router();
 
@@ -52,6 +53,10 @@ const moduleRoutes = [
   {
     path: "/support",
     route: SupportRoutes,
+  },
+  {
+    path: "/dashboard",
+    route: DashboardRoutes,
   },
 ];
 
