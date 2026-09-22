@@ -6,7 +6,7 @@ export interface IRedemption extends Document {
   ownerId: Types.ObjectId;
   shopId: Types.ObjectId;
   qrCode: string;
-  isUsed: boolean;
+  isRedeemed: boolean;
   expiresAt: Date;
 }
 
@@ -18,7 +18,7 @@ export type TRedemptionQuery = {
   limit?: string;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
-  isUsed?: 'true' | 'false';
+  isRedeemed?: 'true' | 'false';
   date?: string;
   timeframe?: TTimeFrame;
 };

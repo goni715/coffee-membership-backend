@@ -18,7 +18,7 @@ const getOwnerRedemptions = asyncHandler(async (req, res) => {
     const { userId } = req.headers;
     const validatedQuery = (req as any).validatedQuery;
     const result = await RedemptionService.getOwnerRedemptions(userId as string, validatedQuery);
-    
+
     res.status(200).json({
         success: true,
         message: "Redemptions are retrieved successfully.",
@@ -53,11 +53,25 @@ const verifyQrCode = asyncHandler(async (req, res) => {
 })
 
 
+const getSingleRedemptionByQrCode = asyncHandler(async (req, res) => {
+    const { userId, role } = req.headers;
+    const { qrCode } = req.params;
+    const result = await RedemptionService.getSingleRedemptionByQrCode(userId as string, role as 'owner' | 'customer', qrCode as string);
+
+    res.status(200).json({
+        success: true,
+        message: "Redemption is retrieved successfully.",
+        data: result
+    })
+})
+
+
 const RedemptionController = {
     generateRedemptionQrCode,
     getOwnerRedemptions,
     getCustomerRedemptions,
-    verifyQrCode
+    verifyQrCode,
+    getSingleRedemptionByQrCode
 }
 
 export default RedemptionController;

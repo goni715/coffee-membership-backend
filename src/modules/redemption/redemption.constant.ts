@@ -17,7 +17,7 @@ export const REDEMPTION_VALID_FIELDS: string[] = [
     "limit",
     "sortBy",
     "sortOrder",
-    "isUsed",
+    "isRedeemed",
 ];
 
 export const TIMEFRAME = {

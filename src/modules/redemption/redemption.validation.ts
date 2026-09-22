@@ -38,10 +38,16 @@ export const getRedemptionsValidationSchema = z.object({
         limit: z.string().optional(),
         sortOrder: z.string().optional(),
         sortBy: z.string().optional(),
-        isUsed: booleanQuerySchema("isUsed")
+        isRedeemed: booleanQuerySchema("isRedeemed")
             .optional(),
         timeframe: enumSchema("timeframe", TIMEFRAME_VALUES)
             .optional(),
         date: dateZodSchema.optional(),
     })
 });
+
+export const getSingleRedemptionValidationSchema = z.object({
+    params: z.object({
+        qrCode: qrCodeZodSchema
+    })
+})

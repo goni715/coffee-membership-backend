@@ -27,7 +27,7 @@ const redemptionSchema = new Schema<IRedemption>(
       unique: true,
       trim: true,
     },
-    isUsed: {
+    isRedeemed: {
       type: Boolean,
       default: false,
     },

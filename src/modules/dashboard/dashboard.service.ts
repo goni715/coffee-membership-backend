@@ -23,7 +23,7 @@ const getOwnerStats = async (ownerId: string) => {
     const end = `${todayStr}T23:59:59.999+00:00`;
 
     const todaysRedemptions = await RedemptionModel.countDocuments({
-        isUsed: true,
+        isRedeemed: true,
         createdAt: {
             $gte: new Date(start),
             $lte: new Date(end),

@@ -2,7 +2,7 @@ import express from 'express';
 import authMiddleware from '@/middlewares/authMiddleware';
 import { USER_ROLES } from '../user/user.constant';
 import validationMiddleware from '@/middlewares/validationMiddleware';
-import { generateQrCodeValidationSchema, getRedemptionsValidationSchema, verifyQrCodeValidationSchema } from './redemption.validation';
+import { generateQrCodeValidationSchema, getRedemptionsValidationSchema, getSingleRedemptionValidationSchema, verifyQrCodeValidationSchema } from './redemption.validation';
 import RedemptionController from './redemption.controller';
 
 const router = express.Router();
@@ -35,6 +35,12 @@ router.post(
     RedemptionController.verifyQrCode,
 );
 
+router.get(
+    '/single-redemption/:qrCode',
+    authMiddleware(USER_ROLES.OWNER, USER_ROLES.CUSTOMER),
+    validationMiddleware(getSingleRedemptionValidationSchema),
+    RedemptionController.getSingleRedemptionByQrCode,
+);
 
 const RedemptionRoutes = router;
 export default RedemptionRoutes;

@@ -11,6 +11,7 @@ import { TRedemptionQuery } from "./redemption.interface";
 import { makeFilterQuery, makeSearchQuery } from "@/helpers/QueryBuilder";
 import { PipelineStage, Types } from "mongoose";
 import { CUSTOMER_REDEMPTION_SEARCHABLE_FIELDS, OWNER_REDEMPTION_SEARCHABLE_FIELDS } from "./redemption.constant";
+import { IUser } from "../user/user.interface";
 
 /*============== generate redemption qr code =================*/
 const generateRedemptionQrCode = async (customerId: string, shopId: string) => {
@@ -51,7 +52,7 @@ const generateRedemptionQrCode = async (customerId: string, shopId: string) => {
     if (redemption) {
         return {
             qrCode: redemption.qrCode,
-            isUsed: redemption.isUsed,
+            isRedeemed: redemption.isRedeemed,
             expiresAt: redemption.expiresAt
         }
     }
@@ -73,7 +74,7 @@ const generateRedemptionQrCode = async (customerId: string, shopId: string) => {
 
     return {
         qrCode: result.qrCode,
-        isUsed: result.isUsed,
+        isRedeemed: result.isRedeemed,
         expiresAt: result.expiresAt
     };
 }
@@ -87,6 +88,8 @@ const getOwnerRedemptions = async (ownerId: string, query: TRedemptionQuery) => 
         limit = 10,
         sortOrder = "desc",
         sortBy = "createdAt",
+        date,
+        timeframe,
         ...filters // additional filters
     } = query;
 
@@ -106,6 +109,50 @@ const getOwnerRedemptions = async (ownerId: string, query: TRedemptionQuery) => 
     let filterQuery = {};
     if (filters) {
         filterQuery = makeFilterQuery(filters);
+    }
+
+    //date is available
+    if (date) {
+        const start = `${date}T00:00:00.000+00:00`;
+        const end = `${date}T23:59:59.999+00:00`;
+        filterQuery = {
+            ...filterQuery,
+            createdAt: { $gte: new Date(start), $lte: new Date(end) },
+        };
+    }
+
+    //timeframe is available
+    if (timeframe) {
+        const now = new Date();
+
+        if (timeframe === "today") {
+            const todayStr = now.toISOString().split("T")[0];
+            const start = `${todayStr}T00:00:00.000+00:00`;
+            const end = `${todayStr}T23:59:59.999+00:00`;
+
+            filterQuery = {
+                ...filterQuery,
+                createdAt: { $gte: new Date(start), $lte: new Date(end) },
+            };
+        } else if (timeframe === "last_week") {
+            const lastWeek = new Date(now);
+            lastWeek.setDate(now.getDate() - 7);
+            lastWeek.setHours(0, 0, 0, 0);
+
+            filterQuery = {
+                ...filterQuery,
+                createdAt: { $gte: lastWeek },
+            };
+        } else if (timeframe === "last_month") {
+            const lastMonth = new Date(now);
+            lastMonth.setMonth(now.getMonth() - 1);
+            lastMonth.setHours(0, 0, 0, 0);
+
+            filterQuery = {
+                ...filterQuery,
+                createdAt: { $gte: lastMonth },
+            };
+        }
     }
 
     //common pipeline stage
@@ -135,7 +182,7 @@ const getOwnerRedemptions = async (ownerId: string, query: TRedemptionQuery) => 
                 customerPhone: "$customer.phone",
                 customerImg: "$customer.profileImg",
                 qrCode: "$qrCode",
-                isUsed: "$isUsed",
+                isRedeemed: "$isRedeemed",
                 expiresAt: "$expiresAt",
                 createdAt: "$createdAt",
                 updatedAt: "$updatedAt",
@@ -191,6 +238,7 @@ const getCustomerRedemptions = async (customerId: string, query: TRedemptionQuer
         timeframe,
         ...filters // additional filters
     } = query;
+
 
     // set up pagination
     const skip = (Number(page) - 1) * Number(limit);
@@ -281,7 +329,7 @@ const getCustomerRedemptions = async (customerId: string, query: TRedemptionQuer
                 address: "$shop.address",
                 image: "$shop.image",
                 qrCode: "$qrCode",
-                isUsed: "$isUsed",
+                isRedeemed: "$isRedeemed",
                 expiresAt: "$expiresAt",
                 createdAt: "$createdAt",
                 updatedAt: "$updatedAt",
@@ -330,7 +378,8 @@ const verifyQrCode = async (ownerId: string, qrCode: string) => {
     //check redemption
     const redemption = await RedemptionModel.findOne({
         qrCode
-    });
+    }).populate<{ customerId: IUser }>('customerId', 'fullName email phone profileImg');
+
     if (!redemption) {
         throw new NotFoundError("Redemption not found with the provided QR code.");
     }
@@ -341,7 +390,7 @@ const verifyQrCode = async (ownerId: string, qrCode: string) => {
     }
 
     //check if already used
-    if (redemption.isUsed) {
+    if (redemption.isRedeemed) {
         throw new ConflictError("This QR code has already been used.");
     }
 
@@ -351,17 +400,120 @@ const verifyQrCode = async (ownerId: string, qrCode: string) => {
     }
 
     //mark as used
-    redemption.isUsed = true;
+    redemption.isRedeemed = true;
     await redemption.save();
 
-    return null;
+    // extract populated customer data
+    const customer = redemption.customerId as unknown as IUser;
+
+    return {
+        customerId: customer?._id,
+        customerName: customer?.fullName,
+        customerEmail: customer?.email,
+        customerPhone: customer?.phone,
+        customerImg: customer?.profileImg,
+        qrCode: redemption.qrCode,
+        isRedeemed: redemption.isRedeemed,
+        expiresAt: (redemption as any).expiresAt,
+        createdAt: (redemption as any).createdAt,
+    };
+
+}
+
+/*================= get single redemption by qr code =================*/
+const getSingleRedemptionByQrCode = async (userId: string, role: 'owner' | 'customer', qrCode: string) => {
+
+    if (role === 'owner') {
+        const result = await RedemptionModel.aggregate([
+            {
+                $match: {
+                    ownerId: new Types.ObjectId(userId),
+                    qrCode
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "customerId",
+                    foreignField: "_id",
+                    as: "customer",
+                }
+            },
+            {
+                $unwind: "$customer"
+            },
+            {
+                $project: {
+                    _id: 1,
+                    customerId: 1,
+                    customerName: "$customer.fullName",
+                    customerEmail: "$customer.email",
+                    customerPhone: "$customer.phone",
+                    customerImg: "$customer.profileImg",
+                    qrCode: "$qrCode",
+                    isRedeemed: "$isRedeemed",
+                    expiresAt: "$expiresAt",
+                    createdAt: "$createdAt",
+                    updatedAt: "$updatedAt",
+                },
+            },
+        ])
+
+
+        if (!result[0]) {
+            throw new NotFoundError("Redemption not found with the provided QR code.");
+        }
+        return result[0];
+    }
+
+
+    //if role is customer
+    const result = await RedemptionModel.aggregate([
+        {
+            $match: {
+                customerId: new Types.ObjectId(userId)
+            }
+        },
+        {
+            $lookup: {
+                from: "shops",
+                localField: "shopId",
+                foreignField: "_id",
+                as: "shop",
+            }
+        },
+        {
+            $unwind: "$shop"
+        },
+        {
+            $project: {
+                _id: 1,
+                shopId: 1,
+                shopName: "$shop.name",
+                contactNumber: "$shop.contactNumber",
+                address: "$shop.address",
+                image: "$shop.image",
+                qrCode: "$qrCode",
+                isRedeemed: "$isRedeemed",
+                expiresAt: "$expiresAt",
+                createdAt: "$createdAt",
+                updatedAt: "$updatedAt",
+            },
+        },
+    ])
+
+    if (!result[0]) {
+        throw new NotFoundError("Redemption not found with the provided QR code.");
+    }
+    return result[0];
 }
 
 const RedemptionService = {
     generateRedemptionQrCode,
     getOwnerRedemptions,
     getCustomerRedemptions,
-    verifyQrCode
+    verifyQrCode,
+    getSingleRedemptionByQrCode
 }
 
 export default RedemptionService;

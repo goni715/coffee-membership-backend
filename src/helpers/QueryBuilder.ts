@@ -9,23 +9,19 @@ class QueryBuilder {
     return searchQuery;
   }
 
+  
   makeFilterQuery(filters: Record<string, unknown>) {
     const filterQuery: Record<string, unknown> = {};
 
     Object.keys(filters).forEach((key) => {
       const value = filters[key];
 
-      if (value === "true") {
-        filterQuery[key] = true;
-      } else if (value === "false") {
-        filterQuery[key] = false;
+      if (typeof value === "boolean") {
+        filterQuery[key] = value;
       }
-
-      // Convert numeric strings to actual numbers
-      else if (!isNaN(Number(value))) {
-        filterQuery[key] = Number(value);
+      else if (typeof value === "number") {
+        filterQuery[key] = value;
       }
-      // Keep it as a string if none of the above conditions match
       else {
         filterQuery[key] = value;
       }
