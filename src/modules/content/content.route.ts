@@ -16,7 +16,6 @@ router.patch(
 
 router.get(
     '/content-by-type/:type',
-    authMiddleware(USER_ROLES.CUSTOMER, USER_ROLES.OWNER),
     validationMiddleware(getContentValidationSchema),
     ContentController.getContentByType,
 );

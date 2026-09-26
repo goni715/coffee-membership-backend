@@ -42,7 +42,7 @@ const loginUser = asyncHandler(async (req, res) => {
     ip as string,
   );
 
-  const refreshTokenMaxAge = req.body.rememberMe
+  const refreshTokenMaxAge = req.body.isRememberMe
     ? Number(config.refreshToken.refresh_token_cookie_max_age_remember)
     : Number(config.refreshToken.refresh_token_cookie_max_age);
 
@@ -70,7 +70,7 @@ const loginAdmin = asyncHandler(async (req, res) => {
   const { message, accessToken, refreshToken, ...rest } =
     await AuthService.loginAdmin(req.body, ip as string);
 
-  const refreshTokenMaxAge = req.body.rememberMe
+  const refreshTokenMaxAge = req.body.isRememberMe
     ? Number(config.refreshToken.refresh_token_cookie_max_age_remember)
     : Number(config.refreshToken.refresh_token_cookie_max_age);
 
@@ -99,7 +99,7 @@ const logout = asyncHandler(async (req, res) => {
   const { refreshToken: refreshTokenByBody } = req.body;
   const finalRefreshToken = refreshToken || refreshTokenByBody;
 
-  const result = await AuthService.logout(finalRefreshToken);
+  await AuthService.logout(finalRefreshToken);
 
   res.clearCookie("refreshToken", {
     httpOnly: true,
@@ -111,7 +111,7 @@ const logout = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "User logged out successfully",
-    data: result,
+    data: null,
   });
 });
 
@@ -121,7 +121,7 @@ const logoutAll = asyncHandler(async (req: Request, res: Response) => {
   const { refreshToken: refreshTokenByBody } = req.body;
   const finalRefreshToken = refreshToken || refreshTokenByBody;
 
-  const result = await AuthService.logoutFromAll(finalRefreshToken);
+  await AuthService.logoutFromAll(finalRefreshToken);
 
   res.clearCookie("refreshToken", {
     httpOnly: true,
@@ -133,7 +133,7 @@ const logoutAll = asyncHandler(async (req: Request, res: Response) => {
   return res.status(200).json({
     success: true,
     message: "Logged out from all devices successfully",
-    data: result,
+    data: null,
   });
 });
 

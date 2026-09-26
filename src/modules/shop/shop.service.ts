@@ -154,7 +154,7 @@ const getShops = async (query: TShopQuery) => {
 };
 
 /*============== get customer shops ================== */
-const getCustomerShops = async (query: TShopQuery) => {
+const getCustomerShops = async (customerId: string, query: TShopQuery) => {
     const {
         searchTerm,
         page = 1,
@@ -190,6 +190,37 @@ const getCustomerShops = async (query: TShopQuery) => {
             }
         },
         {
+            $lookup: {
+                from: "memberships",
+                let: { shopId: "$_id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$shopId", "$$shopId"] },
+                                    {
+                                        $eq: ["$customerId", new Types.ObjectId(customerId)]
+                                    }
+                                ]
+                            },
+                        },
+                    },
+                ],
+                as: "members",
+            },
+        },
+        {
+            $addFields: {
+                isJoin: {
+                    $gt: [{ $size: "$members" }, 0]
+                },
+                membershipStatus: {
+                    $ifNull: [{ $arrayElemAt: ["$members.status", 0] }, null]
+                }
+            }
+        },
+        {
             $project: {
                 _id: 1,
                 name: "$name",
@@ -199,6 +230,8 @@ const getCustomerShops = async (query: TShopQuery) => {
                 address: "$address",
                 dailyBenefitDescription: "$dailyBenefitDescription",
                 qrCode: "$qrCode",
+                isJoin: "$isJoin",
+                membershipStatus: "$membershipStatus",
                 createdAt: "$createdAt",
                 updatedAt: "$updatedAt",
             },

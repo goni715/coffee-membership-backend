@@ -42,7 +42,14 @@ export const createFaqValidationSchema = z.object({
     body: z.object({
         question: questionZodZchema,
         answer: answerZodZchema,
-        category: categoryZodZchema
+        category: categoryZodZchema,
+        isActive: z
+            .boolean({
+                error: (issue) => issue.input === undefined ?
+                    "isActive is required" :
+                    "isActive must be boolean"
+            })
+            .optional()
     })
 });
 

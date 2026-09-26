@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import config from "@/config";
 
-const sendForgotEmail = async (EmailTo: string, otp: string) => {
+const sendForgotEmail = (EmailTo: string, otp: string) => {
   // transporter
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -145,7 +145,7 @@ const sendForgotEmail = async (EmailTo: string, otp: string) => {
   `,
   };
 
-  return await transporter.sendMail(mailOptions);
+  return transporter.sendMail(mailOptions);
 };
 
 export default sendForgotEmail;

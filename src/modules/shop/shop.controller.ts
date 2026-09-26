@@ -25,8 +25,9 @@ const getShops = asyncHandler(async (req, res) => {
 });
 
 const getCustomerShops = asyncHandler(async (req, res) => {
+    const { userId } = req.headers;
     const validatedQuery = pickValidFields(req.query, CUSTOMER_SHOP_VALID_FIELDS);
-    const result = await ShopService.getCustomerShops(validatedQuery);
+    const result = await ShopService.getCustomerShops(userId as string, validatedQuery);
     res.status(200).json({
         success: true,
         message: "Shops are retrieved successfully",

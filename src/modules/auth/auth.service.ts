@@ -483,6 +483,10 @@ const loginAdmin = async (payload: ILogin, ip: string) => {
 
 /*=========== logout ========== */
 const logout = async (refreshToken: string) => {
+  //check refreshToken
+  if (!refreshToken) {
+    throw new UnauthorizedError(`You are unauthorized !`);
+  }
   //check session is revoked with this refreshToken
   const refreshTokenHash = makeHash(refreshToken);
   const session = await SessionModel.findOne({
@@ -491,7 +495,7 @@ const logout = async (refreshToken: string) => {
   });
 
   if (!session) {
-    throw new UnauthorizedError("Invalid refresh token");
+    throw new UnauthorizedError(`You are unauthorized !`);
   }
 
   //update session
@@ -502,6 +506,11 @@ const logout = async (refreshToken: string) => {
 
 /*=========== logout from all devices ========== */
 const logoutFromAll = async (refreshToken: string) => {
+  //check refreshToken
+  if (!refreshToken) {
+    throw new UnauthorizedError(`You are unauthorized !`);
+  }
+  
   //token-verify
   let decoded;
 
@@ -771,7 +780,7 @@ const forgotPasswordSendOtp = async (email: string) => {
   );
 
   //send otp to the email address
-  await sendForgotEmail(email, String(otp));
+  sendForgotEmail(email, String(otp));
 
   return {
     resendAvailableAt: new Date(Date.now() + 60 * 1000), //resend after one minute

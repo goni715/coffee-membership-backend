@@ -111,14 +111,6 @@ export const refreshTokenValidationSchema = z
       })
       .optional(),
   })
-  .refine(
-    (data) =>
-      Boolean(data?.cookies?.refreshToken || data?.body?.refreshToken),
-    {
-      message: "Refresh token is required in cookie or body",
-      path: ["refreshToken"],
-    },
-  );
 
 export const changePasswordValidationSchema = z.object({
   body: z

@@ -8,6 +8,12 @@ const router = express.Router();
 
 
 router.get(
+    '/stats',
+    authMiddleware(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    DashboardController.getStats,
+);
+
+router.get(
     '/owner-stats',
     authMiddleware(USER_ROLES.OWNER),
     DashboardController.getOwnerStats,
