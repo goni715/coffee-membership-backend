@@ -5,6 +5,8 @@ import { PipelineStage, Types } from "mongoose";
 import UserModel from "./user.model";
 import uploadToCloudinary from "@/utils/uploadToCloudinary";
 import MembershipModel from "../membership/membership.model";
+import deleteFromCloudinary from "@/utils/deleteFromCloudinary";
+import makePublicID from "@/utils/makePublicID";
 
 
 
@@ -99,20 +101,42 @@ const getMyProfile = async (userId: string) => {
 const updateProfile = async (userId: string, req: any) => {
     const payload: Partial<IUser> = req.body;
 
-    // if image is available
-    if (req.file) {
-        //upload image
-        const image = await uploadToCloudinary(req?.file?.path as string, "user");
-        payload.profileImg = image.img_url;
+    let image;
+    try {
+        //my-profile
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw new Error("Profile not found");
+        }
+
+        // if image is available
+        if (req.file) {
+            //upload image
+            image = await uploadToCloudinary(req?.file?.path as string, "user");
+            payload.profileImg = image.img_url;
+        }
+
+        //update profile
+        const result = await UserModel.updateOne(
+            { _id: userId },
+            payload,
+        );
+
+        //delete existing image
+        if (req.file && user?.profileImg) {
+            const public_id = makePublicID(user?.profileImg, "user");
+            await deleteFromCloudinary(public_id);
+        }
+
+        return result;
     }
-
-    //update profile
-    const result = await UserModel.updateOne(
-        { _id: userId },
-        payload,
-    );
-
-    return result;
+    catch (error) {
+        // rollback cloudinary upload
+        if (image?.public_id) {
+            await deleteFromCloudinary(image.public_id);
+        }
+        throw error;
+    }
 }
 
 /*============== get customers by shop id ================== */
