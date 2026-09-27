@@ -88,6 +88,7 @@ const updateShopStatus = asyncHandler(async (req, res) => {
     });
 });
 
+
 const ShopController = {
     createShop,
     getShops,
@@ -96,7 +97,7 @@ const ShopController = {
     getSingleCustomerShop,
     getMyShop,
     updateShop,
-    updateShopStatus
+    updateShopStatus,
 }
 
 export default ShopController

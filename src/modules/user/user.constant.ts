@@ -6,6 +6,7 @@ export const ACCOUNT_STATUSES = {
   BLOCKED : 'blocked',
 } as const;
 
+
 export const USER_ROLES = {
   CUSTOMER: "customer",
   OWNER: "owner",

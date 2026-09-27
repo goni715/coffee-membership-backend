@@ -17,11 +17,9 @@ const port = config.port || 5050;
 async function main() {
   try {
     await dbCoonect();
-    if (config.node_env !== "production") {
-      server.listen(port, () => {
-        console.log(`Coffee Membership Backend listening on port http://localhost:${port}`);
-      });
-    }
+    server.listen(port, () => {
+      console.log(`Coffee Membership Backend listening on port http://localhost:${port}`);
+    });
   } catch (error) {
     console.log(error);
   }

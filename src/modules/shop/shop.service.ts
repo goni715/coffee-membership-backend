@@ -583,7 +583,7 @@ const ShopService = {
     getSingleShop,
     getSingleCustomerShop,
     updateShop,
-    updateShopStatus
+    updateShopStatus,
 }
 
 export default ShopService

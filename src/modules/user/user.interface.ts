@@ -1,5 +1,6 @@
 import { Document } from "mongoose";
 import { ACCOUNT_STATUSES, USER_ROLES } from "./user.constant";
+import { TMembershipStatus } from "../membership/membership.interface";
 
 export type TUserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
 export type TAccountStatus = (typeof ACCOUNT_STATUSES)[keyof typeof ACCOUNT_STATUSES];
@@ -31,5 +32,15 @@ export type TUserQuery = {
   sortBy?: string;
   sortOrder?: "asc" | "desc";
   status?: TAccountStatus;
+};
+
+export type TCustomerByShopIdQuery = {
+  searchTerm?: string;
+  page?: string;
+  limit?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  status?: TAccountStatus;
+  membershipStatus?: TMembershipStatus;
 };
 

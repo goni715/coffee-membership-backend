@@ -1,7 +1,5 @@
 import asyncHandler from "@/utils/asyncHandler";
 import SupportService from "./support.service";
-import pickValidFields from "@/utils/pickValidFields";
-import { SUPPORT_VALID_FIELDS } from "./support.constant";
 
 const submitSupportRequest = asyncHandler(async (req, res) => {
     const { userId } = req.headers;

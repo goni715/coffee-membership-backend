@@ -3,7 +3,7 @@ import UserController from "./user.controller";
 import authMiddleware from "@/middlewares/authMiddleware";
 import { USER_ROLES } from "./user.constant";
 import validationMiddleware from "@/middlewares/validationMiddleware";
-import { updateProfileValidationSchema } from "./user.validation";
+import { getCustomersByShopIdValidationSchema, getMyCustomersValidationSchema, updateProfileValidationSchema } from "./user.validation";
 import upload from "@/helpers/upload";
 
 const router = express.Router();
@@ -28,6 +28,19 @@ router.patch(
     UserController.updateProfile
 );
 
+router.get(
+    "/customers/:shopId",
+    authMiddleware(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    validationMiddleware(getCustomersByShopIdValidationSchema),
+    UserController.getCustomersByShopId,
+);
+
+router.get(
+    "/my-customers",
+    authMiddleware(USER_ROLES.OWNER),
+    validationMiddleware(getMyCustomersValidationSchema),
+    UserController.getMyCustomers,
+);
 
 const UserRoutes = router;
 export default UserRoutes;
