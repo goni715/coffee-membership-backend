@@ -119,7 +119,7 @@ router.patch(
 
 router.delete(
   "/delete-account",
-  AuthMiddleware(USER_ROLES.CUSTOMER),
+  AuthMiddleware(USER_ROLES.CUSTOMER, USER_ROLES.OWNER),
   validationMiddleware(deleteAccountValidationSchema),
   AuthController.deleteAccount,
 );

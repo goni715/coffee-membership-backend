@@ -56,7 +56,7 @@ const shopSchema = new Schema<IShop>(
       default: SHOP_STATUSES.INACTIVE,
       index: true
     },
-    totalActiveCustomers: {
+    totalCustomers: {
       type: Number,
       default: 0,
     },

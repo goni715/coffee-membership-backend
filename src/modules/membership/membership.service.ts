@@ -5,7 +5,7 @@ import MembershipModel from "./membership.model";
 import ConflictError from "@/errors/ConflictError";
 import { makeFilterQuery, makeSearchQuery } from "@/helpers/QueryBuilder";
 import { MEMBERSHIP_SEARCHABLE_FIELDS, MEMBERSHIP_STATUSES, MY_MEMBERSHIPS_SEARCHABLE_FIELDS } from "./membership.constant";
-import { PipelineStage, Types } from "mongoose";
+import mongoose, { PipelineStage, Types } from "mongoose";
 import ForbiddenError from "@/errors/ForbiddenError";
 
 
@@ -26,14 +26,37 @@ const joinShop = async (customerId: string, payload: IMembership) => {
         throw new ConflictError("You have already joined this shop.");
     }
 
-    //create membership
-    const result = await MembershipModel.create({
-        customerId,
-        ownerId: shop.ownerId,
-        shopId: payload.shopId
-    });
 
-    return result;
+    //transaction & rollback
+    const session = await mongoose.startSession();
+
+    try {
+        session.startTransaction();
+
+        //create membership
+        const result = await MembershipModel.create([{
+            customerId,
+            ownerId: shop.ownerId,
+            shopId: payload.shopId
+        }], { session });
+
+
+        //update shop total customers
+        await ShopModel.updateOne(
+            { _id: shop._id },
+            { $inc: { totalCustomers: 1 } },
+            { session }
+        );
+
+        //transaction success
+        await session.commitTransaction();
+        return result;
+    } catch (err) {
+        await session.abortTransaction();
+        throw err;
+    } finally {
+        await session.endSession();
+    }
 }
 
 /*=============== join shop ===============*/
@@ -55,14 +78,36 @@ const joinShopWithQrCode = async (customerId: string, qrCode: string) => {
         throw new ConflictError("You have already joined this shop.");
     }
 
-    //create membership
-    const result = await MembershipModel.create({
-        customerId,
-        ownerId: shop.ownerId,
-        shopId: shop._id
-    });
+    //transaction & rollback
+    const session = await mongoose.startSession();
 
-    return result;
+    try {
+        session.startTransaction();
+
+        //create membership
+        const result = await MembershipModel.create([{
+            customerId,
+            ownerId: shop.ownerId,
+            shopId: shop._id
+        }], { session });
+
+
+        //update shop total customers
+        await ShopModel.updateOne(
+            { _id: shop._id },
+            { $inc: { totalCustomers: 1 } },
+            { session }
+        );
+
+        //transaction success
+        await session.commitTransaction();
+        return result;
+    } catch (err) {
+        await session.abortTransaction();
+        throw err;
+    } finally {
+        await session.endSession();
+    }
 }
 
 /*=============== get membership requests ===============*/

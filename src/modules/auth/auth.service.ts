@@ -970,6 +970,11 @@ const deleteAccount = async (loginUserId: string, password: string) => {
     throw new UnprocessableError("Password is not correct");
   }
 
+  //at this moment delete account functionality is disabled for all roles
+  if (!["admin", "super_admin"].includes(user.role)) {
+    throw new ForbiddenError(`Sorry! You are not allowed to delete this account.`);
+  }
+
   //transaction & rollback
   const session = await mongoose.startSession();
 

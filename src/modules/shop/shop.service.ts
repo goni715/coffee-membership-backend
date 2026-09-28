@@ -112,6 +112,7 @@ const getShops = async (query: TShopQuery) => {
                 dailyBenefitDescription: "$dailyBenefitDescription",
                 qrCode: "$qrCode",
                 status: "$status",
+                totalCustomers: "$totalCustomers",
                 createdAt: "$createdAt",
                 updatedAt: "$updatedAt",
             },

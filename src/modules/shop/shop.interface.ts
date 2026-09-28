@@ -14,7 +14,7 @@ export interface IShop extends Document {
   dailyBenefitDescription?: string;
   qrCode: string;
   status: TShopStatus;
-  totalActiveCustomers: number;
+  totalCustomers: number;
 }
 
 export type TQrCodePrefix = typeof QRCODE_PREFIX[keyof typeof QRCODE_PREFIX];
