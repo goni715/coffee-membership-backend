@@ -7,6 +7,7 @@ const supportSchema = new Schema<ISupport>({
         type: Schema.Types.ObjectId,
         ref: "User",
         required: [true, "userId is required"],
+        index: true
     },
     title: {
         type: String,
@@ -28,17 +29,22 @@ const supportSchema = new Schema<ISupport>({
     },
     replyAt: {
         type: Date,
-        default: null
+        default: null,
+        index: true
     },
     status: {
         type: String,
         enum: Object.values(SUPPORT_STATUSES),
         default: SUPPORT_STATUSES.NEW,
+        index: true
     },
 }, {
     timestamps: true,
     versionKey: false
 })
+
+// support sort by last update time
+supportSchema.index({ createdAt: -1 })
 
 const SupportModel = model<ISupport>('Support', supportSchema);
 export default SupportModel;

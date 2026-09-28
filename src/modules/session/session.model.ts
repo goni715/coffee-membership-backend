@@ -6,7 +6,8 @@ const sessionSchema = new Schema<ISession>({
     userId: {
         type: Schema.Types.ObjectId,
         ref: "User",
-        required: [true, "userId is required"]
+        required: [true, "userId is required"],
+        index: true
     },
     refreshTokenHash: {
         type: String,

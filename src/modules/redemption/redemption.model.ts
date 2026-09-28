@@ -14,6 +14,7 @@ const redemptionSchema = new Schema<IRedemption>(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: [true, 'Owner ID is required'],
+      index: true,
     },
     shopId: {
       type: Schema.Types.ObjectId,
@@ -41,6 +42,10 @@ const redemptionSchema = new Schema<IRedemption>(
     versionKey: false
   }
 );
+
+
+// compound index to find the latest redemption for a customer at a shop
+redemptionSchema.index({ customerId: 1, shopId: 1, createdAt: -1 });
 
 
 const RedemptionModel = model<IRedemption>('Redemption', redemptionSchema);

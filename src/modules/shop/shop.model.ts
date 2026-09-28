@@ -8,6 +8,7 @@ const shopSchema = new Schema<IShop>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "ownerId is required"],
+      index: true
     },
     name: {
       type: String,
@@ -53,6 +54,7 @@ const shopSchema = new Schema<IShop>(
       type: String,
       enum: Object.values(SHOP_STATUSES),
       default: SHOP_STATUSES.INACTIVE,
+      index: true
     },
     totalActiveCustomers: {
       type: Number,
@@ -64,6 +66,13 @@ const shopSchema = new Schema<IShop>(
     versionKey: false,
   },
 );
+
+
+// compound index to get newest shops
+shopSchema.index({ createdAt: -1 });
+
+// compound index to query shops by owner and status
+shopSchema.index({ ownerId: 1, status: 1 });
 
 const ShopModel = model<IShop>("Shop", shopSchema);
 export default ShopModel;

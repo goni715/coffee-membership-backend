@@ -41,7 +41,7 @@ const generateRedemptionQrCode = async (customerId: string, shopId: string) => {
         throw new ConflictError("You don't have an active membership with this shop.");
     }
 
-    //check lastest redemption
+    //check latest redemption
     const redemption = await RedemptionModel.findOne({
         customerId,
         shopId,

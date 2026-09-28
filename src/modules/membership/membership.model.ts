@@ -9,16 +9,19 @@ const membershipSchema = new Schema<IMembership>(
             type: Schema.Types.ObjectId,
             ref: 'User',
             required: [true, 'Customer ID is required'],
+            index: true
         },
         ownerId: {
             type: Schema.Types.ObjectId,
             ref: 'User',
             required: [true, 'Owner ID is required'],
+            index: true
         },
         shopId: {
             type: Schema.Types.ObjectId,
             ref: 'Shop',
             required: [true, 'Shop ID is required'],
+            index: true
         },
         status: {
             type: String,

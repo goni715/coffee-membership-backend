@@ -7,11 +7,13 @@ const openingHourSchema = new Schema<IOpeningHour>(
             type: Schema.Types.ObjectId,
             ref: "User",
             required: true,
+            index: true
         },
         shopId: {
             type: Schema.Types.ObjectId,
             ref: "Shop",
             required: true,
+            index: true
         },
         day: {
             type: String,
