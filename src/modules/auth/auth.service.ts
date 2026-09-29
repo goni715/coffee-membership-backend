@@ -482,47 +482,19 @@ const loginAdmin = async (payload: ILogin, ip: string) => {
 };
 
 /*=========== logout ========== */
-const logout = async (refreshToken: string) => {
-  //check refreshToken
-  if (!refreshToken) {
-    throw new UnauthorizedError(`You are unauthorized !`);
-  }
-  //check session is revoked with this refreshToken
-  const refreshTokenHash = makeHash(refreshToken);
-  const session = await SessionModel.findOne({
-    refreshTokenHash,
-    revoked: false,
-  });
-
-  if (!session) {
-    throw new UnauthorizedError(`You are unauthorized !`);
-  }
-
+const logout = async (sessionId: string) => {
   //update session
-  await SessionModel.updateOne({ refreshTokenHash }, { revoked: true });
+  await SessionModel.updateOne(
+    { _id: sessionId },
+    { revoked: true }
+  );
 
   return null;
 };
 
 /*=========== logout from all devices ========== */
-const logoutFromAll = async (refreshToken: string) => {
-  //check refreshToken
-  if (!refreshToken) {
-    throw new UnauthorizedError(`You are unauthorized !`);
-  }
-  
-  //token-verify
-  let decoded;
-
-  try {
-    decoded = verifyToken(
-      refreshToken,
-      config.jwt.jwt_refresh_secret as Secret,
-    );
-  } catch (error) {
-    throw new UnauthorizedError("Invalid refresh token");
-  }
-
+const logoutFromAll = async (userId: string, sessionId: string) => {
+ 
   //transaction & rollback
   const session = await mongoose.startSession();
   try {
@@ -531,14 +503,14 @@ const logoutFromAll = async (refreshToken: string) => {
     //delete all session
     await SessionModel.deleteMany(
       {
-        userId: decoded.userId,
+        userId,
       },
       { session },
     );
 
     //update tokenVersion
     await UserModel.updateOne(
-      { _id: decoded.userId },
+      { _id: userId },
       { $inc: { tokenVersion: 1 } },
       { session },
     );

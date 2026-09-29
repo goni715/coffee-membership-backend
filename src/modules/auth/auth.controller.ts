@@ -95,11 +95,8 @@ const loginAdmin = asyncHandler(async (req, res) => {
 
 //logout
 const logout = asyncHandler(async (req, res) => {
-  const { refreshToken } = req.cookies;
-  const { refreshToken: refreshTokenByBody } = req.body;
-  const finalRefreshToken = refreshToken || refreshTokenByBody;
-
-  await AuthService.logout(finalRefreshToken);
+  const { sessionId } = req.headers;
+  await AuthService.logout(sessionId as string);
 
   res.clearCookie("refreshToken", {
     httpOnly: true,
@@ -117,11 +114,8 @@ const logout = asyncHandler(async (req, res) => {
 
 //logout from all devices
 const logoutAll = asyncHandler(async (req: Request, res: Response) => {
-  const { refreshToken } = req.cookies;
-  const { refreshToken: refreshTokenByBody } = req.body;
-  const finalRefreshToken = refreshToken || refreshTokenByBody;
-
-  await AuthService.logoutFromAll(finalRefreshToken);
+  const { userId, sessionId} = req.headers;
+  await AuthService.logoutFromAll(userId as string, sessionId as string);
 
   res.clearCookie("refreshToken", {
     httpOnly: true,

@@ -51,26 +51,27 @@ router.post(
 router.post(
   "/logout",
   AuthMiddleware(USER_ROLES.CUSTOMER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.OWNER),
-  validationMiddleware(refreshTokenValidationSchema),
   AuthController.logout,
 );
 router.post(
   "/logout-all",
   AuthMiddleware(USER_ROLES.CUSTOMER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.OWNER),
-  validationMiddleware(refreshTokenValidationSchema),
   AuthController.logoutAll,
 );
+
+router.get(
+  "/get-all-sessions",
+  AuthMiddleware(USER_ROLES.CUSTOMER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.OWNER),
+  AuthController.getAllSessions,
+);
+
 
 router.patch(
   "/revoke-session/:sessionId",
   AuthMiddleware(USER_ROLES.CUSTOMER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.OWNER),
   AuthController.revokeSession,
 );
-router.get(
-  "/get-all-sessions",
-  AuthMiddleware(USER_ROLES.CUSTOMER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.OWNER),
-  AuthController.getAllSessions,
-);
+
 router.post(
   "/refresh-token",
   validationMiddleware(refreshTokenValidationSchema),
