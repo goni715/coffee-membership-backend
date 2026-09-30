@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import globalErrorHandler from "@/middlewares/globalErrorHandler";
 import notFound from "@/middlewares/notFound";
+import { globalRateLimiter } from "@/middlewares/rateLimiter";
 import config from "@/config";
 import router from "@/routes";
 
@@ -39,6 +40,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 // parse application/json
 app.use(bodyParser.json());
+
+// Rate Limiter middleware
+app.use("/api/v1", globalRateLimiter);
 
 //application routes
 app.use("/api/v1", router);

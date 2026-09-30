@@ -15,6 +15,7 @@ import {
 } from "./auth.validation";
 import AuthMiddleware from "@/middlewares/authMiddleware";
 import { USER_ROLES } from "@/modules/user/user.constant";
+import { authRateLimiter } from "@/middlewares/rateLimiter";
 
 const router = express.Router();
 
@@ -26,6 +27,7 @@ router.post(
 
 router.post(
   "/verify-account",
+  authRateLimiter,
   validationMiddleware(verifyOtpValidationSchema),
   AuthController.verifyAccount,
 );
@@ -38,12 +40,14 @@ router.post(
 
 router.post(
   "/login-user",
+  authRateLimiter,
   validationMiddleware(loginValidationSchema),
   AuthController.loginUser,
 );
 
 router.post(
   "/login-admin",
+  authRateLimiter,
   validationMiddleware(loginValidationSchema),
   AuthController.loginAdmin,
 );
@@ -88,6 +92,7 @@ router.patch(
 //forgot-password with otp
 router.post(
   "/forgot-password/send-otp",
+  authRateLimiter,
   validationMiddleware(emailValidationSchema),
   AuthController.forgotPasswordSendOtp,
 );
