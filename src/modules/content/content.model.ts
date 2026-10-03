@@ -1,11 +1,11 @@
 import { Schema, model } from 'mongoose';
-import { CONTENT_TYPES } from './content.constant';
+import { CONTENT_TYPE_VALUES } from './content.constant';
 import { IContent } from './content.interface';
 
 const contentSchema = new Schema<IContent>({
     type: {
         type: String,
-        enum: Object.values(CONTENT_TYPES),
+        enum: CONTENT_TYPE_VALUES,
         required: true,
         unique: true,
     },

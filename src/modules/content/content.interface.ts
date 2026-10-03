@@ -1,8 +1,8 @@
 
 import { Document } from "mongoose";
-import { CONTENT_TYPES } from "./content.constant";
+import { CONTENT_TYPE } from "./content.constant";
 
-export type TContentType = typeof CONTENT_TYPES[keyof typeof CONTENT_TYPES];
+export type TContentType = typeof CONTENT_TYPE[keyof typeof CONTENT_TYPE];
 
 export interface IContent extends Document {
     type: TContentType;
