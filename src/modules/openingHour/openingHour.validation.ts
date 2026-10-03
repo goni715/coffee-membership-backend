@@ -2,42 +2,23 @@
 import { z } from "zod";
 import moment from "moment";
 import isNotObjectId from "@/utils/isNotObjectId";
+import { requiredStringSchema } from "@/schemas/required.schema";
+import { booleanSchema } from "@/schemas/boolean.schema";
 
 // "07:00 AM", "11:30 PM") format validation
 const timeFormatRegex = /^(0[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/i;
 
-const openTimeZodSchema = z
-    .string({
-        error: (issue) =>
-            issue.input === undefined
-                ? "openTime is required"
-                : "openTime must be string",
-    })
-    .trim()
+const openTimeZodSchema = requiredStringSchema('openTime')
     .regex(timeFormatRegex, {
         message: "Invalid open time format. Use 'hh:mm AM/PM' (e.g., '09:00 AM')",
     })
 
-const closeTimeZodSchema = z
-    .string({
-        error: (issue) =>
-            issue.input === undefined
-                ? "closeTime is required"
-                : "closeTime must be string",
-    })
-    .trim()
+const closeTimeZodSchema = requiredStringSchema('closeTime')
     .regex(timeFormatRegex, {
         message: "Invalid close time format. Use 'hh:mm AM/PM' (e.g., '09:00 AM')",
     })
 
-const dayZodSchema = z
-    .string({
-        error: (issue) =>
-            issue.input === undefined
-                ? "day is required"
-                : "day must be string",
-    })
-    .trim()
+const dayZodSchema = requiredStringSchema('day')
     .min(3, { message: "Day must be at least 3 characters long" })
     .max(60, { message: "Day cannot be more than 10 characters long" })
 
@@ -64,13 +45,7 @@ export const createOpeningHourValidationSchema = z.object({
 })
 
 
-const openingIdZodSchema = z
-    .string({
-        error: (issue) =>
-            issue.input === undefined
-                ? "openingId is required"
-                : "openingId must be a string",
-    })
+const openingIdZodSchema = requiredStringSchema('openingId')
     .refine((id) => !isNotObjectId(id), {
         message: "openingId must be a valid ObjectId",
     });
@@ -84,13 +59,7 @@ export const updateOpeningHourValidationSchema = z.object({
             day: dayZodSchema.optional(),
             openTime: openTimeZodSchema.optional(),
             closeTime: closeTimeZodSchema.optional(),
-            isClosed: z
-                .boolean({
-                    error: (issue) =>
-                        issue.input === undefined
-                            ? "isClosed is required"
-                            : "isClosed must be boolean",
-                })
+            isClosed: booleanSchema('isClosed')
                 .optional()
                 .default(false),
         })

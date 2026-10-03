@@ -13,7 +13,7 @@ export const FAQ_VALID_FIELDS: string[] = [
     "category"
 ];
 
-export const FAQ_CATEGORIES = {
+export const FAQ_CATEGORY = {
     GENERAL: "general", //General Questions
     ACCOUNT_PROFILE: "account_profile",//Account & Profile
     MEMBERSHIP_REDEMPTION: "membership_redemption",//Membership & Drink Redemption
@@ -23,3 +23,4 @@ export const FAQ_CATEGORIES = {
     TECHNICAL_SUPPORT: "technical_support"//Technical & Support
 } as const;
 
+export const FAQ_CATEGORY_VALUES = Object.values(FAQ_CATEGORY)

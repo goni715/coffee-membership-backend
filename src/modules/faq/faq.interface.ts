@@ -1,7 +1,7 @@
 import { Document } from "mongoose";
-import { FAQ_CATEGORIES } from "./faq.constant";
+import { FAQ_CATEGORY } from "./faq.constant";
 
-export type TFaqCategory = typeof FAQ_CATEGORIES[keyof typeof FAQ_CATEGORIES];
+export type TFaqCategory = typeof FAQ_CATEGORY[keyof typeof FAQ_CATEGORY];
 
 export interface IFaq extends Document {
     question: string;

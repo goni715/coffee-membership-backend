@@ -1,6 +1,6 @@
 import { model, Schema } from "mongoose";
 import { IFaq } from "./faq.interface";
-import { FAQ_CATEGORIES } from "./faq.constant";
+import { FAQ_CATEGORY, FAQ_CATEGORY_VALUES } from "./faq.constant";
 
 const faqSchema = new Schema<IFaq>({
     question: {
@@ -22,14 +22,18 @@ const faqSchema = new Schema<IFaq>({
     },
     category: {
         type: String,
-        enum: Object.values(FAQ_CATEGORIES),
-        default: FAQ_CATEGORIES.GENERAL,
+        enum: FAQ_CATEGORY_VALUES,
+        default: FAQ_CATEGORY.GENERAL,
+        index: true
     },
     isActive: {
         type: Boolean,
         default: true,
     },
-}, { timestamps: true, versionKey: false });
+}, {
+    timestamps: true,
+    versionKey: false
+});
 
 const FaqModel = model<IFaq>('Faq', faqSchema);
 export default FaqModel;

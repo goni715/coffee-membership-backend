@@ -4,6 +4,7 @@ import { shopIdZodSchema } from "../shop/shop.validation";
 import isNotObjectId from "@/utils/isNotObjectId";
 import { enumSchema } from "@/schemas/enum.schema";
 import { MEMBERSHIP_UPDATE_STATUSES } from "./membership.constant";
+import { requiredStringSchema } from "@/schemas/required.schema";
 
 export const shopQrCodeRegex = /^HH-SHOP-[0-9A-Fa-f]{6}$/;
 
@@ -13,15 +14,9 @@ export const joinShopValidationSchema = z.object({
     }),
 });
 
-const membershipIdZodSchema = z
-    .string({
-        error: (issue) =>
-            issue.input === undefined
-                ? "membershipId is required"
-                : "membershipId must be a string",
-    }).refine((id) => !isNotObjectId(id), {
-        message: "membershipId must be a valid ObjectId",
-    });
+const membershipIdZodSchema = requiredStringSchema("membershipId").refine((id) => !isNotObjectId(id), {
+    message: "membershipId must be a valid ObjectId",
+});
 
 
 export const updateMembershipStatusValidationSchema = z.object({
@@ -46,14 +41,7 @@ export const getSingleMembershipByShopIdValidationSchema = z.object({
 });
 
 
-export const qrCodeZodSchema = z
-    .string({
-        error: (issue) =>
-            issue.input === undefined
-                ? "QR code is required"
-                : "QR code must be a string",
-    })
-    .trim()
+export const qrCodeZodSchema = requiredStringSchema("QR code")
     .regex(shopQrCodeRegex, {
         message: "Invalid QR code format. Expected format: HH-SHOP-XXXXXX",
     });
