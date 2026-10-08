@@ -8,10 +8,11 @@ import notFound from "@/middlewares/notFound";
 import { globalRateLimiter } from "@/middlewares/rateLimiter";
 import config from "@/config";
 import router from "@/routes";
+import dbConnect from "@/utils/dbConnect";
 
 const app: Application = express();
 
-app.set("trust proxy", true);
+app.set("trust proxy", 1);
 app.use(
   cors({
     origin: config.cors_origins
@@ -40,6 +41,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 // parse application/json
 app.use(bodyParser.json());
+
+// ensure DB connection for serverless/cold-start environments
+app.use(async (req, res, next) => {
+  await dbConnect();
+  next();
+});
 
 // Rate Limiter middleware
 app.use("/api/v1", globalRateLimiter);

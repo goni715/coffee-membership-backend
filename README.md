@@ -161,3 +161,25 @@ yarn start
   ```
   Coffee Membership Back-end listening on port http://localhost:5050
   ```
+
+---
+
+## 🔄 Generate Project with Relative Paths
+
+Clone and generate a backend project using standard relative paths (without `@/` path alias):
+
+```bash
+# Default (creates 'relative-backend' folder):
+node clone-relative.js
+
+# Or specify a custom folder name:
+node clone-relative.js relative-backend
+```
+
+**What this script does:**
+- Copies all project source files, configurations, and `.env`.
+- Converts all `@/...` path aliases into clean relative paths (`./`, `../`, `../../`).
+- Cleans up `tsconfig.json` by removing `baseUrl` and `paths`.
+- Sets the `build` script in `package.json` to standard `tsc`.
+- Generates `vercel.json` for Vercel deployment automatically.
+
