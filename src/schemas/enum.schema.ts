@@ -5,7 +5,8 @@ export const enumSchema = (name: string, enumValues: string[]) => z.string({
         issue.input === undefined
             ? `${name} is required`
             : `${name} must be a string`,
-})
+}).trim()
+    .min(1, `${name} is required`)
     .refine((val) => enumValues.includes(val), {
         message: `${name} must be ${enumValues.map((type) => `'${type}'`).join(" or ")}`,
     })

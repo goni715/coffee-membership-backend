@@ -752,7 +752,7 @@ const forgotPasswordSendOtp = async (email: string) => {
   );
 
   //send otp to the email address
-  sendForgotEmail(email, String(otp));
+  await sendForgotEmail(email, String(otp));
 
   return {
     resendAvailableAt: new Date(Date.now() + 60 * 1000), //resend after one minute
@@ -820,18 +820,22 @@ const forgotPasswordSetNewPassword = async (payload: INewPassword) => {
   // decrypt and verify the reset token
   let email: string;
   let expiresAt: string;
+  let issuedAt: number;
+  
   try {
-    const decryptedData = decrypt(token); // "user@example.com:1710234567890"
+    const decryptedData = decrypt(token); // "user@example.com:1710234567890:1710234267"
     const parts = decryptedData?.split(":");
     const extractedEmail = parts?.[0];
     const extractedExpiresAt = parts?.[1];
+    const extractedIssuedAt = parts?.[2];
 
-    if (!extractedEmail || !extractedExpiresAt) {
+    if (!extractedEmail || !extractedExpiresAt || !extractedIssuedAt) {
       throw new UnprocessableError("Invalid reset token.");
     }
 
     email = extractedEmail;
     expiresAt = extractedExpiresAt;
+    issuedAt = Number(extractedIssuedAt);
   } catch (error) {
     throw new UnprocessableError("Invalid reset token.");
   }
@@ -855,6 +859,14 @@ const forgotPasswordSetNewPassword = async (payload: INewPassword) => {
   //check user is blocked
   if (user.status === ACCOUNT_STATUSES.BLOCKED) {
     throw new ForbiddenError("Your account is blocked.");
+  }
+
+  //check if password was changed after this reset token was issued
+  if (
+    user.passwordChangedAt &&
+    isJWTIssuedBeforePassChanged(user.passwordChangedAt, issuedAt)
+  ) {
+    throw new GoneError("Reset token has already been used.");
   }
 
   //update the password

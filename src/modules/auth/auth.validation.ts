@@ -27,7 +27,7 @@ export const passwordZodSchema = requiredStringSchema('password')
     passwordRegex,
     "Password must contain at least one letter and one number",
   )
-  .trim();
+
 
 const otpZodSchema = z
   .string({
