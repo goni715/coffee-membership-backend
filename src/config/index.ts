@@ -42,10 +42,6 @@ const envSchema = z.object({
   CLOUD_NAME: z.string(),
   CLOUD_API_KEY: z.string(),
   CLOUD_API_SECRET_KEY: z.string(),
-
-  // Stripe
-  STRIPE_SECRET_KEY: z.string(),
-  STRIPE_WEBHOOK_SECRET: z.string(),
 });
 
 // Validate process.env against schema
@@ -107,9 +103,5 @@ export default {
     cloud_name: env.CLOUD_NAME,
     cloud_api_key: env.CLOUD_API_KEY,
     cloud_api_secret_key: env.CLOUD_API_SECRET_KEY,
-  },
-  stripe: {
-    stripe_secret_key: env.STRIPE_SECRET_KEY,
-    stripe_webhook_secret: env.STRIPE_WEBHOOK_SECRET,
   },
 };

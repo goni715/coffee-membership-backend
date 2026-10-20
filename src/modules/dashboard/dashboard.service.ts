@@ -6,7 +6,7 @@ import ShopModel from "../shop/shop.model"
 import { USER_ROLES } from "../user/user.constant"
 import UserModel from "../user/user.model"
 
-
+/* ========= ADMIN DASHBOARD stats ========= */
 const getStats = async () => {
     //total shops
     const totalShops = await ShopModel.countDocuments();
@@ -44,7 +44,7 @@ const getStats = async () => {
     }
 }
 
-
+/* ========= owner stats ========= */
 const getOwnerStats = async (ownerId: string) => {
     //total active customers for shop
     const totalActiveCustomers = await MembershipModel.countDocuments({
