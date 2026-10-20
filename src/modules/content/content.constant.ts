@@ -6,7 +6,3 @@ export const CONTENT_TYPE = {
 } as const;
 
 export const CONTENT_TYPE_VALUES = Object.values(CONTENT_TYPE);
-
-export const CONTENT_VALID_FIELDS: string[] = [
-  "type"
-];

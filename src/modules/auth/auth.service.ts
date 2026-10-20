@@ -493,7 +493,7 @@ const logout = async (sessionId: string) => {
 };
 
 /*=========== logout from all devices ========== */
-const logoutFromAll = async (userId: string, sessionId: string) => {
+const logoutFromAll = async (userId: string) => {
  
   //transaction & rollback
   const session = await mongoose.startSession();

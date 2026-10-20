@@ -24,12 +24,3 @@ export const MY_MEMBERSHIPS_SEARCHABLE_FIELDS = [
     "contactNumber",
     "address"
 ];
-
-export const MEMBERSHIP_VALID_FIELDS: string[] = [
-    "searchTerm",
-    "page",
-    "limit",
-    "sortBy",
-    "sortOrder",
-    "status",
-];

@@ -29,11 +29,7 @@ export const passwordZodSchema = requiredStringSchema('password')
   )
 
 
-const otpZodSchema = z
-  .string({
-    error: (issue) =>
-      issue.input === undefined ? "otp is required" : "otp must be string",
-  })
+const otpZodSchema = requiredStringSchema('otp')
   .regex(/^\d{6}$/, "Otp must be a 6-digit number")
 
 export const emailValidationSchema = z.object({

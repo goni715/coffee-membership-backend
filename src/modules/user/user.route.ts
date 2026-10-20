@@ -3,7 +3,7 @@ import UserController from "./user.controller";
 import authMiddleware from "@/middlewares/authMiddleware";
 import { USER_ROLES } from "./user.constant";
 import validationMiddleware from "@/middlewares/validationMiddleware";
-import { getCustomersByShopIdValidationSchema, getMyCustomersValidationSchema, updateProfileValidationSchema } from "./user.validation";
+import { getCustomersByShopIdValidationSchema, getCustomersValidationSchema, getMyCustomersValidationSchema, updateProfileValidationSchema } from "./user.validation";
 import upload from "@/helpers/upload";
 
 const router = express.Router();
@@ -11,7 +11,7 @@ const router = express.Router();
 router.get(
     "/customers",
     authMiddleware(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
-    validationMiddleware(getMyCustomersValidationSchema),
+    validationMiddleware(getCustomersValidationSchema),
     UserController.getCustomers
 );
 

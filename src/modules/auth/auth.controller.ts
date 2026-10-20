@@ -114,8 +114,8 @@ const logout = asyncHandler(async (req, res) => {
 
 //logout from all devices
 const logoutAll = asyncHandler(async (req: Request, res: Response) => {
-  const { userId, sessionId} = req.headers;
-  await AuthService.logoutFromAll(userId as string, sessionId as string);
+  const { userId } = req.headers;
+  await AuthService.logoutFromAll(userId as string);
 
   res.clearCookie("refreshToken", {
     httpOnly: true,

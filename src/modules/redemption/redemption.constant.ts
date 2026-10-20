@@ -11,14 +11,6 @@ export const CUSTOMER_REDEMPTION_SEARCHABLE_FIELDS = [
     "address"
 ];
 
-export const REDEMPTION_VALID_FIELDS: string[] = [
-    "searchTerm",
-    "page",
-    "limit",
-    "sortBy",
-    "sortOrder",
-    "isRedeemed",
-];
 
 export const TIMEFRAME = {
     TODAY: 'today',

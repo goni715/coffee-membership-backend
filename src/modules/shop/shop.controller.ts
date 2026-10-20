@@ -1,7 +1,5 @@
 import asyncHandler from "@/utils/asyncHandler";
 import ShopService from "./shop.service";
-import pickValidFields from "@/utils/pickValidFields";
-import { CUSTOMER_SHOP_VALID_FIELDS, SHOP_VALID_FIELDS } from "./shop.constant";
 
 const createShop = asyncHandler(async (req, res) => {
     const { userId } = req.headers;
@@ -14,7 +12,7 @@ const createShop = asyncHandler(async (req, res) => {
 });
 
 const getShops = asyncHandler(async (req, res) => {
-    const validatedQuery = pickValidFields(req.query, SHOP_VALID_FIELDS);
+    const validatedQuery = (req as any).validatedQuery;
     const result = await ShopService.getShops(validatedQuery);
     res.status(200).json({
         success: true,
@@ -26,7 +24,7 @@ const getShops = asyncHandler(async (req, res) => {
 
 const getCustomerShops = asyncHandler(async (req, res) => {
     const { userId } = req.headers;
-    const validatedQuery = pickValidFields(req.query, CUSTOMER_SHOP_VALID_FIELDS);
+    const validatedQuery = (req as any).validatedQuery;
     const result = await ShopService.getCustomerShops(userId as string, validatedQuery);
     res.status(200).json({
         success: true,
