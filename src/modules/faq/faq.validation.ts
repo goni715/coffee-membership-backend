@@ -4,6 +4,7 @@ import { requiredStringSchema } from '@/schemas/required.schema';
 import { enumSchema } from '@/schemas/enum.schema';
 import { FAQ_CATEGORY_VALUES } from './faq.constant';
 import { booleanSchema } from '@/schemas/boolean.schema';
+import { booleanQuerySchema } from '@/schemas/global.schema';
 
 const questionRegex = /^.*\?$/
 
@@ -53,3 +54,18 @@ export const deleteFaqValidationSchema = z.object({
         faqId: faqIdZodSchema,
     }),
 })
+
+export const getFaqsValidationSchema = z.object({
+    query: z.object({
+        searchTerm: z.string().optional(),
+        page: z.string().optional(),
+        limit: z.string().optional(),
+        sortBy: z.string().optional(),
+        sortOrder: enumSchema("sortOrder", ["asc", "desc"])
+            .optional(),
+        isActive: booleanQuerySchema("isActive")
+            .optional(),
+        category: enumSchema("category", FAQ_CATEGORY_VALUES)
+            .optional(),
+    })
+});

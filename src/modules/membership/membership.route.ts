@@ -3,7 +3,7 @@ import authMiddleware from '@/middlewares/authMiddleware';
 import { USER_ROLES } from '../user/user.constant';
 import validationMiddleware from '@/middlewares/validationMiddleware';
 import MembershipController from './membership.controller';
-import { getSingleMembershipByShopIdValidationSchema, getSingleRequestValidationSchema, joinShopValidationSchema, joinShopWithQrCodeValidationSchema, updateMembershipStatusValidationSchema } from './membership.validation';
+import { getMembershipsValidationSchema, getSingleMembershipByShopIdValidationSchema, getSingleRequestValidationSchema, joinShopValidationSchema, joinShopWithQrCodeValidationSchema, updateMembershipStatusValidationSchema } from './membership.validation';
 
 const router = express.Router();
 
@@ -24,6 +24,7 @@ router.post(
 router.get(
     '/requests',
     authMiddleware(USER_ROLES.OWNER),
+    validationMiddleware(getMembershipsValidationSchema),
     MembershipController.getMembershipRequests,
 );
 
@@ -44,6 +45,7 @@ router.patch(
 router.get(
     '/my-memberships',
     authMiddleware(USER_ROLES.CUSTOMER),
+    validationMiddleware(getMembershipsValidationSchema),
     MembershipController.getMyMemberships,
 );
 

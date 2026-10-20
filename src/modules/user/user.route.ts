@@ -11,6 +11,7 @@ const router = express.Router();
 router.get(
     "/customers",
     authMiddleware(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    validationMiddleware(getMyCustomersValidationSchema),
     UserController.getCustomers
 );
 

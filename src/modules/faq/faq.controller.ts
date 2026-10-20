@@ -1,6 +1,4 @@
 import asyncHandler from "../../utils/asyncHandler";
-import pickValidFields from "../../utils/pickValidFields";
-import { FAQ_VALID_FIELDS } from "./faq.constant";
 import FaqService from "./faq.service";
 
 
@@ -15,7 +13,7 @@ const createFaq = asyncHandler(async (req, res) => {
 })
 
 const getFaqs = asyncHandler(async (req, res) => {
-    const validatedQuery = pickValidFields(req.query, FAQ_VALID_FIELDS);
+    const validatedQuery = (req as any).validatedQuery;
     const result = await FaqService.getFaqs(validatedQuery);
     res.status(200).json({
         success: true,

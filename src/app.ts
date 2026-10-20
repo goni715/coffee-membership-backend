@@ -19,9 +19,7 @@ app.use(
       ? config.cors_origins.split(",").map((origin) => origin.trim())
       : [
         "http://localhost:3000",
-        "http://localhost:3001",
-        "http://10.10.28.72:3000",
-        "http://10.10.28.72:3001",
+        "http://localhost:3001"
       ],
     credentials: true,
   }),
@@ -29,7 +27,11 @@ app.use(
 
 app.use(cookieParser());
 
-app.use(morgan("dev"));
+if (config.node_env === "production") {
+  app.use(morgan("combined"));
+} else {
+  app.use(morgan("dev"));
+}
 
 app.get("/", (req: Request, res: Response) => {
   res.send(`Coffee Membership Backend server is running !`);

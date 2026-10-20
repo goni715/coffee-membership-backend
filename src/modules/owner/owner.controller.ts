@@ -1,7 +1,5 @@
 import asyncHandler from "@/utils/asyncHandler";
 import OwnerService from "./owner.service";
-import pickValidFields from "@/utils/pickValidFields";
-import { OWNER_VALID_FIELDS } from "./owner.constant";
 
 
 const createOwner = asyncHandler(async (req, res) => {
@@ -14,7 +12,7 @@ const createOwner = asyncHandler(async (req, res) => {
 });
 
 const getOwners = asyncHandler(async (req, res) => {
-  const validatedQuery = pickValidFields(req.query, OWNER_VALID_FIELDS);
+  const validatedQuery = (req as any).validatedQuery;
   const result = await OwnerService.getOwners(validatedQuery);
   res.status(200).json({
     success: true,
@@ -45,10 +43,10 @@ const deleteOwner = asyncHandler(async (req, res) => {
 });
 
 const OwnerController = {
-    createOwner,
-    getOwners,
-    updateOwner,
-    deleteOwner
+  createOwner,
+  getOwners,
+  updateOwner,
+  deleteOwner
 }
 
 export default OwnerController;

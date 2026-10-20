@@ -3,7 +3,7 @@ import z from "zod";
 import { shopIdZodSchema } from "../shop/shop.validation";
 import isNotObjectId from "@/utils/isNotObjectId";
 import { enumSchema } from "@/schemas/enum.schema";
-import { MEMBERSHIP_UPDATE_STATUSES } from "./membership.constant";
+import { MEMBERSHIP_STATUSES, MEMBERSHIP_UPDATE_STATUSES } from "./membership.constant";
 import { requiredStringSchema } from "@/schemas/required.schema";
 
 export const shopQrCodeRegex = /^HH-SHOP-[0-9A-Fa-f]{6}$/;
@@ -53,3 +53,14 @@ export const joinShopWithQrCodeValidationSchema = z.object({
     })
 })
 
+
+export const getMembershipsValidationSchema = z.object({
+    query: z.object({
+        searchTerm: z.string().optional(),
+        page: z.string().optional(),
+        limit: z.string().optional(),
+        sortBy: z.string().optional(),
+        sortOrder: enumSchema('sortOrder', ['asc', 'desc']).optional(),
+        status: enumSchema('status', Object.values(MEMBERSHIP_STATUSES)).optional(),
+    })
+});

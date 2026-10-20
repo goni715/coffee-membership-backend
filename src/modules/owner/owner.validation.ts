@@ -6,6 +6,8 @@ import {
   phoneNumberZodSchema,
 } from "@/modules/auth/auth.validation";
 import { Types } from "mongoose";
+import { enumSchema } from "@/schemas/enum.schema";
+import { ACCOUNT_STATUSES } from "../user/user.constant";
 
 export const createOwnerValidationSchema = z.object({
   body: z.object({
@@ -41,4 +43,16 @@ export const deleteOwnerValidationSchema = z.object({
   params: z.object({
     ownerId: ownerIdZodSchema,
   }),
+});
+
+
+export const getOwnersValidationSchema = z.object({
+  query: z.object({
+    searchTerm: z.string().optional(),
+    page: z.string().optional(),
+    limit: z.string().optional(),
+    sortBy: z.string().optional(),
+    sortOrder: enumSchema('sortOrder', ['asc', 'desc']).optional(),
+    status: enumSchema('status', [ACCOUNT_STATUSES.ACTIVE, ACCOUNT_STATUSES.BLOCKED]).optional(),
+  })
 });

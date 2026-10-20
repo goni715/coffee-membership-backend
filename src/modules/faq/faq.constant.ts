@@ -3,16 +3,6 @@ export const FAQ_SEARCHABLE_FIELDS = [
     "question"
 ]
 
-export const FAQ_VALID_FIELDS: string[] = [
-    "searchTerm",
-    "page",
-    "limit",
-    "sortBy",
-    "sortOrder",
-    "isActive",
-    "category"
-];
-
 export const FAQ_CATEGORY = {
     GENERAL: "general", //General Questions
     ACCOUNT_PROFILE: "account_profile",//Account & Profile

@@ -1,7 +1,7 @@
 import express from "express";
 import OwnerController from "./owner.controller";
 import validationMiddleware from "@/middlewares/validationMiddleware";
-import { createOwnerValidationSchema, deleteOwnerValidationSchema, updateOwnerValidationSchema } from "./owner.validation";
+import { createOwnerValidationSchema, deleteOwnerValidationSchema, getOwnersValidationSchema, updateOwnerValidationSchema } from "./owner.validation";
 import authMiddleware from "@/middlewares/authMiddleware";
 import { USER_ROLES } from "@/modules/user/user.constant";
 
@@ -17,6 +17,7 @@ router.post(
 router.get(
   "/get-owners",
   authMiddleware(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+  validationMiddleware(getOwnersValidationSchema),
   OwnerController.getOwners,
 );
 

@@ -3,7 +3,7 @@ import FaqController from './faq.controller';
 import authMiddleware from '@/middlewares/authMiddleware';
 import { USER_ROLES } from '../user/user.constant';
 import validationMiddleware from '@/middlewares/validationMiddleware';
-import { createFaqValidationSchema, deleteFaqValidationSchema, updateFaqValidationSchema } from './faq.validation';
+import { createFaqValidationSchema, deleteFaqValidationSchema, getFaqsValidationSchema, updateFaqValidationSchema } from './faq.validation';
 
 const router = express.Router();
 
@@ -16,6 +16,7 @@ router.post(
 router.get(
     '/faqs',
     authMiddleware(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    validationMiddleware(getFaqsValidationSchema),
     FaqController.getFaqs
 );
 router.get(

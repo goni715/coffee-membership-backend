@@ -14,11 +14,3 @@ export const USER_ROLES = {
   SUPER_ADMIN: "super_admin",
 } as const;
 
-export const USER_VALID_FIELDS: string[] = [
-  "searchTerm",
-  "page",
-  "limit",
-  "sortBy",
-  "sortOrder",
-  "status",
-];
