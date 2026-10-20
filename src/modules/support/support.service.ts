@@ -4,7 +4,8 @@ import SupportModel from "./support.model";
 import { SUPPORT_SEARCHABLE_FIELDS, SUPPORT_STATUSES } from "./support.constant";
 import ConflictError from "@/errors/ConflictError";
 import NotFoundError from "@/errors/NotFoundError";
-import { PipelineStage } from "mongoose";
+import { PipelineStage, Types } from "mongoose";
+import sendReplyEmail from "@/utils/email/sendReplyEmail";
 
 
 /* ==================== Create Support ==================== */
@@ -121,13 +122,38 @@ const getSupports = async (query: TSupportQuery) => {
 
 /* ==================== Reply Support ==================== */
 const replySupport = async (supportId: string, replyMessage: string) => {
-    const support = await SupportModel.findById(supportId);
-    if (!support) {
+    const support = await SupportModel.aggregate([
+        {
+            $match: {
+                _id: new Types.ObjectId(supportId)
+            }
+        },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'userId',
+                foreignField: '_id',
+                as: 'user'
+            }
+        },
+        { $unwind: '$user' },
+        {
+            $project: {
+                _id: 1,
+                email: "$user.email",
+                replyMessage: "$replyMessage",
+            }
+        },
+    ]);
+
+    if (support.length === 0) {
         throw new NotFoundError("Support not found with the provided ID");
     }
 
+    const userEmail = support[0].email;
+
     //check already replied
-    if (support.replyMessage) {
+    if (support[0].replyMessage) {
         throw new ConflictError("Reply message already sent.")
     }
 
@@ -139,7 +165,7 @@ const replySupport = async (supportId: string, replyMessage: string) => {
     );
 
     //send reply email
-    // await sendReplyEmail(support.email, replyMessage);
+    await sendReplyEmail(userEmail, replyMessage);
     return result;
 };
 

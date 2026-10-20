@@ -22,9 +22,46 @@ const getSupports = asyncHandler(async (req, res) => {
     });
 });
 
+const replySupport = asyncHandler(async (req, res) => {
+    const { supportId } = req.params;
+    const { replyMessage } = req.body;
+    const result = await SupportService.replySupport(supportId as string, replyMessage);
+    
+    res.status(200).json({
+        success: true,
+        message: "Reply message has been sent successfully",
+        data: result
+    })
+})
+
+const closeSupport = asyncHandler(async (req, res) => {
+    const { supportId } = req.params;
+    const result = await SupportService.closeSupport(supportId as string);
+    
+    res.status(200).json({
+        success: true,
+        message: "Support request has been closed successfully",
+        data: result
+    })
+})
+
+const deleteSupport = asyncHandler(async (req, res) => {
+    const { supportId } = req.params;
+    const result = await SupportService.deleteSupport(supportId as string);
+    
+    res.status(200).json({
+        success: true,
+        message: "Support request is deleted successfully",
+        data: result
+    })
+})
+
 
 const SupportController = {
     submitSupportRequest,
-    getSupports
+    getSupports,
+    replySupport,
+    closeSupport,
+    deleteSupport
 }
 export default SupportController;

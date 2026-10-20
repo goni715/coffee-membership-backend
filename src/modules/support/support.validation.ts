@@ -2,6 +2,7 @@ import z from "zod";
 import { SUPPORT_STATUSES } from "./support.constant";
 import { requiredStringSchema } from "@/schemas/required.schema";
 import { enumSchema } from "@/schemas/enum.schema";
+import isNotObjectId from "@/utils/isNotObjectId";
 
 export const dateFormatRegex = /^20\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 
@@ -42,4 +43,26 @@ export const getAllSupportsValidationSchema = z.object({
             .optional(),
         date: dateZodSchema.optional(),
     })
+});
+
+export const supportIdZodSchema = requiredStringSchema('supportId').refine((id) => !isNotObjectId(id), {
+    message: "supportId must be a valid ObjectId",
+});
+
+export const replySupportValidationSchema = z.object({
+    params: z.object({
+        supportId: supportIdZodSchema,
+    }),
+    body: z.object({
+        replyMessage: requiredStringSchema('replyMessage')
+            .max(500, {
+                message: "Reply message must not exceed 500 characters",
+            }),
+    })
+});
+
+export const closeSupportValidationSchema = z.object({
+    params: z.object({
+        supportId: supportIdZodSchema,
+    }),
 });
